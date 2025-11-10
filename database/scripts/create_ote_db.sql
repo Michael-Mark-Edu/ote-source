@@ -60,37 +60,37 @@ create table BookListings (
 
 -- Permissions management
 
-GRANT ALL ON SCHEMA public TO michael_mark;
-GRANT ALL ON TABLE public.booklistings TO michael_mark;
-GRANT ALL ON TABLE public.books TO michael_mark;
-GRANT ALL ON TABLE public.coursebooks TO michael_mark;
-GRANT ALL ON TABLE public.courses TO michael_mark;
-GRANT ALL ON TABLE public.schools TO michael_mark;
-GRANT ALL ON TABLE public.users TO michael_mark;
+grant all on schema public to michael_mark;
+grant all on table public.Booklistings to michael_mark;
+grant all on table public.Books to michael_mark;
+grant all on table public.Coursebooks to michael_mark;
+grant all on table public.Courses to michael_mark;
+grant all on table public.Schools to michael_mark;
+grant all on table public.Users to michael_mark;
 
-GRANT ALL ON SCHEMA public TO khadijah_wright;
-GRANT ALL ON TABLE public.booklistings TO khadijah_wright;
-GRANT ALL ON TABLE public.books TO khadijah_wright;
-GRANT ALL ON TABLE public.coursebooks TO khadijah_wright;
-GRANT ALL ON TABLE public.courses TO khadijah_wright;
-GRANT ALL ON TABLE public.schools TO khadijah_wright;
-GRANT ALL ON TABLE public.users TO khadijah_wright;
+grant all on schema public to khadijah_wright;
+grant all on table public.Booklistings to khadijah_wright;
+grant all on table public.Books to khadijah_wright;
+grant all on table public.Coursebooks to khadijah_wright;
+grant all on table public.Courses to khadijah_wright;
+grant all on table public.Schools to khadijah_wright;
+grant all on table public.Users to khadijah_wright;
 
-GRANT ALL ON SCHEMA public TO scott_harris;
-GRANT ALL ON TABLE public.booklistings TO scott_harris;
-GRANT ALL ON TABLE public.books TO scott_harris;
-GRANT ALL ON TABLE public.coursebooks TO scott_harris;
-GRANT ALL ON TABLE public.courses TO scott_harris;
-GRANT ALL ON TABLE public.schools TO scott_harris;
-GRANT ALL ON TABLE public.users TO scott_harris;
+grant all on schema public to scott_harris;
+grant all on table public.Booklistings to scott_harris;
+grant all on table public.Books to scott_harris;
+grant all on table public.Coursebooks to scott_harris;
+grant all on table public.Courses to scott_harris;
+grant all on table public.Schools to scott_harris;
+grant all on table public.Users to scott_harris;
 
-GRANT ALL ON SCHEMA public TO beau_coffie;
-GRANT ALL ON TABLE public.booklistings TO beau_coffie;
-GRANT ALL ON TABLE public.books TO beau_coffie;
-GRANT ALL ON TABLE public.coursebooks TO beau_coffie;
-GRANT ALL ON TABLE public.courses TO beau_coffie;
-GRANT ALL ON TABLE public.schools TO beau_coffie;
-GRANT ALL ON TABLE public.users TO beau_coffie;
+grant all on schema public to beau_coffie;
+grant all on table public.Booklistings to beau_coffie;
+grant all on table public.Books to beau_coffie;
+grant all on table public.Coursebooks to beau_coffie;
+grant all on table public.Courses to beau_coffie;
+grant all on table public.Schools to beau_coffie;
+grant all on table public.Users to beau_coffie;
 
 -- Dummy data; in production it's probably best to comment these lines out
 
