@@ -1,2 +1,6 @@
 bin/
 obj/
+frontend/dist
+frontend/node_modules
+frontend/src/routeTree.gen.ts
+frontend/.tanstack/
