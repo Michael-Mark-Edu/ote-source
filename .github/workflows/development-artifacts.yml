@@ -1,0 +1,31 @@
+name: Upload React Dev Artifacts to S3
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Install dependencies
+      run: cd frontend; npm ci
+    - name: Build artifacts
+      run: cd frontend; npx vite build --base='https://development.opentextbookexchange.shop'
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v5.0.0
+      with:
+        path: frontend/dist

@@ -19,8 +19,9 @@ function RootComponent() {
           {/* Page Choices */}
           <nav className="hidden sm:flex gap-10 text-sm text-gray-600">
             <Link to="/" className="hover:text-gray-900 text-lg pl-40">Home</Link>
-            <Link to="/test" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">Explore</Link>
+            <Link to="/explore" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">Explore</Link>
             <Link to="/about" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">About</Link>
+            <Link to="/test" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">Testing</Link> 
           </nav>
 
           {/* Search Bar */}
