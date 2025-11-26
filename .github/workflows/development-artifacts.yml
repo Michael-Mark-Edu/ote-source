@@ -5,14 +5,14 @@ on:
     branches: [ "development" ]
   pull_request:
     branches: [ "development" ]
-    
+
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
-        
+        node-version: [22.x]
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -22,10 +22,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - name: Install dependencies
-      run: cd frontend; npm ci
+      run: npm ci
     - name: Build artifacts
-      run: cd frontend; npx vite build --base='https://development.opentextbookexchange.shop'
+      run: npx vite build --base='https://development.opentextbookexchange.shop'
     - name: Upload Artifact
       uses: actions/upload-artifact@v5.0.0
       with:
-        path: frontend/dist
+        path: dist
