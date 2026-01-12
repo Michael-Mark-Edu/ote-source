@@ -16,6 +16,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-      <ProjectReference Include="../src/CHANGEME_ROUTENAME.csproj" />
+      <ProjectReference Include="../Src/CHANGEME_ROUTENAME.csproj" />
   </ItemGroup>
 </Project>

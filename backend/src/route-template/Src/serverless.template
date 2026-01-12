@@ -1,9 +1,9 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Transform": "AWS::Serverless-2016-10-31",
-  "Description": "This template is partially managed by Amazon.Lambda.Annotations (v1.7.0.0).",
+  "Description": "This template is partially managed by Amazon.Lambda.Annotations (v1.8.0.0).",
   "Resources": {
-    "routesFunctionFunctionHandlerGenerated": {
+    "OTERoutesFunctionFunctionHandlerGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -18,7 +18,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 512,
         "Timeout": 30,
@@ -26,7 +26,7 @@
           "AWSLambdaBasicExecutionRole"
         ],
         "PackageType": "Zip",
-        "Handler": "CHANGEME_ROUTENAME::routes.Function_FunctionHandler_Generated::FunctionHandler",
+        "Handler": "CHANGEME_ROUTENAME::OTE.Routes.Function_FunctionHandler_Generated::FunctionHandler",
         "Events": {
           "RootAny": {
             "Type": "Api",
