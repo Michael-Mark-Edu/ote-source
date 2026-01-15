@@ -12,5 +12,5 @@
   "function-runtime": "dotnet10",
   "function-memory-size": 512,
   "function-timeout": 30,
-  "function-handler": "CHANGEME_ROUTENAME::routes.Function::FunctionHandler"
+  "function-handler": "CHANGEME_ROUTENAME::OTE.Routes.Function::FunctionHandler"
 }

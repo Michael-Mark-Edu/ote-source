@@ -17,8 +17,8 @@ public class Function
     [RestApi(LambdaHttpMethod.Any, "/")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
     {
-        var factory = new OteContextFactory();
-        var dbContext = factory.CreateDbContext();
+        var factory = new OteContextFactory(context.Logger);
+        var dbContext = factory.CreateDbContext(["lambda"]);
         var schoolRepo = new SchoolRepo(dbContext, context.Logger);
 
         var schools = await schoolRepo.GetAll();
