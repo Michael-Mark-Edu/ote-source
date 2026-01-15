@@ -6,13 +6,13 @@ namespace OTE.Data.EFCore.Entities;
 public class SchoolEntity
 {
     [Key]
-    public int SchoolID { get; set; }
+    public int SchoolId { get; set; }
 
     [MaxLength(255)]
-    public string SchoolName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     [MaxLength(10)]
-    public string SchoolAcronym { get; set; } = string.Empty;
+    public string Acronym { get; set; } = string.Empty;
 
     [MaxLength(2)]
     [MinLength(2)]

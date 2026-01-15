@@ -12,7 +12,7 @@ public class Tests : IDisposable
     public Tests()
     {
         _factory = new OteContextFactory();
-        _context = _factory.CreateDbContext(["lambda"]);
+        _context = _factory.CreateDbContext(["test"]);
         _repo = new SchoolRepo(_context, new MockLambdaLogger());
         _transaction = _context.Database.BeginTransaction();
     }
@@ -38,8 +38,8 @@ public class Tests : IDisposable
 
         var dto = new SchoolDto
         {
-            SchoolName = "Foo Bar",
-            SchoolAcronym = "FB",
+            Name = "Foo Bar",
+            Acronym = "FB",
             State = "OR",
             City = "Nowhere"
         };
@@ -49,12 +49,12 @@ public class Tests : IDisposable
         var insertedEntry = await _repo.Insert(entity);
         Assert.NotNull(insertedEntry);
         var inserted = insertedEntry.Entity;
-        Assert.Equal(entity.SchoolName, inserted.SchoolName);
-        Assert.Equal(entity.SchoolAcronym, inserted.SchoolAcronym);
+        Assert.Equal(entity.Name, inserted.Name);
+        Assert.Equal(entity.Acronym, inserted.Acronym);
         Assert.Equal(entity.State, inserted.State);
         Assert.Equal(entity.City, inserted.City);
 
-        var key = inserted.SchoolID;
+        var key = inserted.SchoolId;
 
         all = await _repo.GetAll();
         Assert.NotNull(all);
@@ -62,8 +62,8 @@ public class Tests : IDisposable
 
         dto = new SchoolDto
         {
-            SchoolName = "Baz Quz",
-            SchoolAcronym = "BQ",
+            Name = "Baz Quz",
+            Acronym = "BQ",
             State = "OR",
             City = "Nowhere"
         };
@@ -73,8 +73,8 @@ public class Tests : IDisposable
         var updatedEntry = await _repo.Update(key, entity);
         Assert.NotNull(updatedEntry);
         var updated = updatedEntry.Entity;
-        Assert.Equal(entity.SchoolName, updated.SchoolName);
-        Assert.Equal(entity.SchoolAcronym, updated.SchoolAcronym);
+        Assert.Equal(entity.Name, updated.Name);
+        Assert.Equal(entity.Acronym, updated.Acronym);
         Assert.Equal(entity.State, updated.State);
         Assert.Equal(entity.City, updated.City);
 

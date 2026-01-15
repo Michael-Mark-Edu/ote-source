@@ -7,10 +7,10 @@ namespace OTE.Data.EFCore.Dtos;
 public class SchoolDto : IDto<SchoolEntity>
 {
     [MaxLength(255)]
-    public string SchoolName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     [MaxLength(10)]
-    public string SchoolAcronym { get; set; } = string.Empty;
+    public string Acronym { get; set; } = string.Empty;
 
     [MaxLength(2)]
     [MinLength(2)]
@@ -23,9 +23,9 @@ public class SchoolDto : IDto<SchoolEntity>
     {
         return new SchoolEntity
         {
-            SchoolID = 0,
-            SchoolName = SchoolName,
-            SchoolAcronym = SchoolAcronym,
+            SchoolId = 0,
+            Name = Name,
+            Acronym = Acronym,
             State = State,
             City = City
         };
