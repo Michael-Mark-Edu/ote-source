@@ -2,14 +2,14 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace OTE.Data.Test;
 
-public class Tests : IDisposable
+public class SchoolTests : IDisposable
 {
     private OteContextFactory _factory = null!;
     private OteContext _context = null!;
     private SchoolRepo _repo = null!;
     private IDbContextTransaction _transaction = null!;
 
-    public Tests()
+    public SchoolTests()
     {
         _factory = new OteContextFactory();
         _context = _factory.CreateDbContext(["test"]);
