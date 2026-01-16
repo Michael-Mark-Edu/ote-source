@@ -31,6 +31,14 @@ jobs:
         cd backend
         dotnet build
 
+    - name: Wait for DB
+      run: |
+        for i in {1..30}; do
+          pg_isready -h localhost -p 5432 && break
+          echo "Waiting for PostgreSQL… ($i)"
+          sleep 1
+        done
+
     - name: Setup DB
       run: |
         cd backend/src/Data.EFCore
