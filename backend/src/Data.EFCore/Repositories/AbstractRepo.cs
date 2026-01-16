@@ -43,6 +43,13 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             await context.SaveChangesAsync();
             return entry;
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
+        {
+            if (e.InnerException == null)
+                throw e;
+            logger.LogError(e.InnerException.Message);
+            return null;
+        }
         catch (Exception e)
         {
             logger.LogError(e.Message);
@@ -75,6 +82,13 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             await context.SaveChangesAsync();
             return update;
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
+        {
+            if (e.InnerException == null)
+                throw e;
+            logger.LogError(e.InnerException.Message);
+            return null;
+        }
         catch (Exception e)
         {
             logger.LogError(e.Message);
@@ -97,6 +111,13 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             var removed = _dbSet.Remove(dbEntity);
             await context.SaveChangesAsync();
             return removed;
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
+        {
+            if (e.InnerException == null)
+                throw e;
+            logger.LogError(e.InnerException.Message);
+            return null;
         }
         catch (Exception e)
         {

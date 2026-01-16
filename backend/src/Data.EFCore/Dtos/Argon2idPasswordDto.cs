@@ -17,7 +17,7 @@ public class Argon2idPasswordDto : IDto<Argon2idPasswordEntity>
 
     public byte[] Hash { get; set; } = null!;
 
-    public Argon2idPasswordEntity Map()
+    public Argon2idPasswordEntity Map(IEnumerable<IEnumerable<object>>? references)
     {
         return new Argon2idPasswordEntity
         {

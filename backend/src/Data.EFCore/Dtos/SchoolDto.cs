@@ -19,7 +19,7 @@ public class SchoolDto : IDto<SchoolEntity>
     [MaxLength(255)]
     public string? City { get; set; }
 
-    public SchoolEntity Map()
+    public SchoolEntity? Map(IEnumerable<IEnumerable<object>>? references)
     {
         return new SchoolEntity
         {

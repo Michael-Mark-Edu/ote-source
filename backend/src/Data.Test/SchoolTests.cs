@@ -44,7 +44,7 @@ public class SchoolTests : IDisposable
             City = "Nowhere"
         };
 
-        var entity = dto.Map();
+        var entity = dto.Map(null);
 
         var insertedEntry = await _repo.Insert(entity);
         Assert.NotNull(insertedEntry);
@@ -68,7 +68,7 @@ public class SchoolTests : IDisposable
             City = "Nowhere"
         };
 
-        entity = dto.Map();
+        entity = dto.Map(null);
 
         var updatedEntry = await _repo.Update(key, entity);
         Assert.NotNull(updatedEntry);
