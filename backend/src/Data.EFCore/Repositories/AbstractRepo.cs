@@ -47,8 +47,9 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
         catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
         {
             if (e.InnerException == null)
-                throw e;
-            logger.LogError(e.InnerException.Message);
+                logger.LogError(e.Message);
+            else
+                logger.LogError(e.InnerException.Message);
             return null;
         }
         catch (Exception e)
@@ -88,8 +89,9 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
         catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
         {
             if (e.InnerException == null)
-                throw e;
-            logger.LogError(e.InnerException.Message);
+                logger.LogError(e.Message);
+            else
+                logger.LogError(e.InnerException.Message);
             return null;
         }
         catch (Exception e)
@@ -118,8 +120,9 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
         catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
         {
             if (e.InnerException == null)
-                throw e;
-            logger.LogError(e.InnerException.Message);
+                logger.LogError(e.Message);
+            else
+                logger.LogError(e.InnerException.Message);
             return null;
         }
         catch (Exception e)
