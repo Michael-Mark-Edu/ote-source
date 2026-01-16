@@ -12,7 +12,7 @@ public class Argon2idPasswordTests : IDisposable
     public Argon2idPasswordTests()
     {
         _factory = new OteContextFactory();
-        _context = _factory.CreateDbContext(["test"]);
+        _context = _factory.CreateDbContext();
         _repo = new Argon2idPasswordRepo(_context, new MockLambdaLogger());
         _transaction = _context.Database.BeginTransaction();
     }

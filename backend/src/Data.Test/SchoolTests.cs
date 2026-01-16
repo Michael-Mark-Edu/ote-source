@@ -12,7 +12,7 @@ public class SchoolTests : IDisposable
     public SchoolTests()
     {
         _factory = new OteContextFactory();
-        _context = _factory.CreateDbContext(["test"]);
+        _context = _factory.CreateDbContext();
         _repo = new SchoolRepo(_context, new MockLambdaLogger());
         _transaction = _context.Database.BeginTransaction();
     }
