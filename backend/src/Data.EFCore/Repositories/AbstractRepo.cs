@@ -16,6 +16,13 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
 {
     protected DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
+    protected virtual IQueryable<TEntity> _queryable {
+        get
+        {
+            return _dbSet.AsQueryable();
+        }
+    }
+
     /// <summary>Gets all entities in the table.</summary>
     /// <returns>The entities in the table.</returns>
     /// <remarks>Returns null if an exception occured.</remarks>
@@ -23,7 +30,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
     {
         try
         {
-            return await _dbSet.ToListAsync();
+            return await _queryable.ToListAsync();
         }
         catch (Exception e)
         {
