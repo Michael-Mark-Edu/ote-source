@@ -3,31 +3,49 @@ name: ote-workflow
 on: [push, pull_request]
 
 jobs:
-  # CURRENTLY BROKEN (couldn't figure out how to get postgres to run locally in
-  # a docker vm
-  #
-  # backend-test:
-  #   container:
-  #     image: mcr.microsoft.com/dotnet/sdk:10.0
-  #   runs-on: ubuntu-latest
-  #
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v4
-  #
-  #   - name: Create secrets.json
-  #     run: |
-  #       mkdir -p ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e
-  #       echo '{ "ConnectionStrings:OteDb": "${{ secrets.AWS_RDS_CONNECTION_STRING }}" }' > ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e/secrets.json
-  #
-  #   - name: Run tests
-  #     run: |
-  #       cd backend
-  #       dotnet test
+  backend-test:
+    # container:
+    #   image: mcr.microsoft.com/dotnet/sdk:10.0
+    #   network: service
+    runs-on: ubuntu-latest
+    services:
+      db-service:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD:
+          POSTGRES_DB: ote
+        ports: ["5432"]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Create secrets.json
+      run: |
+        mkdir -p ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e
+        echo '{ "ConnectionStrings:OteDb": "Host=localhost; Port=5432; Database=ote; Username=postgres; Include Error Detail=true" }' > ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e/secrets.json
+
+    - name: Setup project
+      run: |
+        cd backend
+        dotnet build
+
+    - name: Setup DB
+      run: |
+        cd backend/src/Data.EFCore
+        dotnet tool install --global dotnet-ef --version 10.0.2
+        export PATH="$PATH:/root/.dotnet/tools"
+        dotnet ef database update
+
+    - name: Run tests
+      run: |
+        cd backend
+        dotnet test
 
 
   frontend-upload-development:
-    # needs: [backend-test]
+    needs: [backend-test]
     if: ${{ github.event_name == 'push'
         && github.ref == 'refs/heads/development'
         && github.repository == 'Michael-Mark-Edu/ote-source' }}
