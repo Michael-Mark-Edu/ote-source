@@ -22,28 +22,8 @@ public class UserDto : IDto<UserEntity>
 
     public int Argon2idPasswordId { get; set; }
 
-    public UserEntity? Map(IEnumerable<IEnumerable<object>>? references)
+    public UserEntity Map()
     {
-        if (references == null)
-            return null;
-
-        SchoolEntity? school = null;
-        Argon2idPasswordEntity? password = null;
-
-        foreach (var list in references)
-        {
-            if (list == null)
-                continue;
-
-            if (list.First().GetType() == typeof(SchoolEntity))
-                school = (SchoolEntity?)list.Where(e => ((SchoolEntity)e).SchoolId == SchoolId).FirstOrDefault();
-            else if (list.First().GetType() == typeof(Argon2idPasswordEntity))
-                password = (Argon2idPasswordEntity?)list.Where(e => ((Argon2idPasswordEntity)e).Argon2idPasswordId == Argon2idPasswordId).FirstOrDefault();
-        }
-
-        if (school == null || password == null)
-            return null;
-
         return new UserEntity
         {
             UserId = 0,
@@ -51,8 +31,8 @@ public class UserDto : IDto<UserEntity>
             LastName = LastName,
             MiddleName = MiddleName,
             EmailAddress = EmailAddress,
-            School = school,
-            Argon2idPassword = password
+            SchoolId = SchoolId,
+            Argon2idPasswordId = Argon2idPasswordId
         };
     }
 }

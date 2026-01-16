@@ -46,7 +46,7 @@ public class Argon2idPasswordTests : IDisposable
             Hash = new byte[] { 5, 6, 7, 8 }
         };
 
-        var entity = dto.Map(null);
+        var entity = dto.Map();
 
         var insertedEntry = await _repo.Insert(entity);
         Assert.NotNull(insertedEntry);
@@ -74,7 +74,7 @@ public class Argon2idPasswordTests : IDisposable
             Hash = new byte[] { 50, 60, 70, 80 }
         };
 
-        entity = dto.Map(null);
+        entity = dto.Map();
 
         var updatedEntry = await _repo.Update(key, entity);
         Assert.NotNull(updatedEntry);

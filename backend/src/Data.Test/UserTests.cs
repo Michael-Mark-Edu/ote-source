@@ -73,8 +73,7 @@ public class UserTests : IDisposable
             Argon2idPasswordId = passwordTracked.Entity.Argon2idPasswordId
         };
 
-        var entity = dto.Map([[schoolTracked.Entity], [passwordTracked.Entity]]);
-        Assert.NotNull(entity);
+        var entity = dto.Map();
 
         var insertedEntry = await _repo.Insert(entity);
         Assert.NotNull(insertedEntry);
@@ -83,8 +82,10 @@ public class UserTests : IDisposable
         Assert.Equal(entity.LastName, inserted.LastName);
         Assert.Equal(entity.MiddleName, inserted.MiddleName);
         Assert.Equal(entity.EmailAddress, inserted.EmailAddress);
-        Assert.Equal(entity.School, inserted.School);
-        Assert.Equal(entity.Argon2idPassword, inserted.Argon2idPassword);
+        Assert.NotNull(inserted.School);
+        Assert.Equal(entity.SchoolId, inserted.SchoolId);
+        Assert.NotNull(inserted.Argon2idPassword);
+        Assert.Equal(entity.Argon2idPasswordId, inserted.Argon2idPasswordId);
 
         var key = inserted.UserId;
 
@@ -102,8 +103,7 @@ public class UserTests : IDisposable
             Argon2idPasswordId = passwordTracked.Entity.Argon2idPasswordId
         };
 
-        entity = dto.Map([[schoolTracked.Entity], [passwordTracked.Entity]]);
-        Assert.NotNull(entity);
+        entity = dto.Map();
 
         var updatedEntry = await _repo.Update(key, entity);
         Assert.NotNull(updatedEntry);
@@ -112,8 +112,10 @@ public class UserTests : IDisposable
         Assert.Equal(entity.LastName, updated.LastName);
         Assert.Equal(entity.MiddleName, updated.MiddleName);
         Assert.Equal(entity.EmailAddress, updated.EmailAddress);
-        Assert.Equal(entity.School, updated.School);
-        Assert.Equal(entity.Argon2idPassword, updated.Argon2idPassword);
+        Assert.NotNull(updated.School);
+        Assert.Equal(entity.SchoolId, updated.SchoolId);
+        Assert.NotNull(updated.Argon2idPassword);
+        Assert.Equal(entity.Argon2idPasswordId, updated.Argon2idPasswordId);
 
         all = await _repo.GetAll();
         Assert.NotNull(all);

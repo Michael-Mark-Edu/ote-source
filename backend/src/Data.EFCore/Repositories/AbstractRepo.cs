@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OTE.Data.EFCore.Contexts;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OTE.Data.EFCore.Repositories;
 
@@ -73,6 +74,8 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             foreach (var property in typeof(TEntity).GetProperties())
             {
                 if (property.GetCustomAttributes(typeof(KeyAttribute), false).Any())
+                    continue;
+                if (property.GetCustomAttributes(typeof(ForeignKeyAttribute), false).Any())
                     continue;
 
                 property.SetValue(target, property.GetValue(entity));
