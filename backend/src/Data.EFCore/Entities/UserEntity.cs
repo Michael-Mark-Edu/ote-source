@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -5,22 +6,28 @@ using System.Text.Json.Serialization;
 namespace OTE.Data.EFCore.Entities;
 
 /// <summary>Entity type for representing users.</summary>
+[Index(nameof(Username), nameof(EmailAddress), IsUnique = true)]
 public class UserEntity
 {
     [Key]
     public int UserId { get; set; }
 
     [MaxLength(255)]
-    public string FirstName { get; set; } = string.Empty;
-
-    [MaxLength(255)]
-    public string LastName { get; set; } = string.Empty;
-
-    [MaxLength(255)]
-    public string? MiddleName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
 
     [MaxLength(255)]
     public string EmailAddress { get; set; } = string.Empty;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [MaxLength(255)]
+    public string? FirstName { get; set; } = null;
+
+    [MaxLength(255)]
+    public string? LastName { get; set; } = null;
+
+    [MaxLength(255)]
+    public string? MiddleName { get; set; } = null;
 
     [JsonIgnore]
     [ForeignKey("SchoolId")]

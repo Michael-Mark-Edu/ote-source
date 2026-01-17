@@ -14,10 +14,10 @@ public class SchoolDto : IDto<SchoolEntity>
 
     [MaxLength(2)]
     [MinLength(2)]
-    public string? State { get; set; }
+    public string? State { get; set; } = null;
 
     [MaxLength(255)]
-    public string? City { get; set; }
+    public string? City { get; set; } = null;
 
     public SchoolEntity Map()
     {

@@ -65,10 +65,11 @@ public class UserTests : IDisposable
 
         var dto = new UserDto
         {
+            Username = "michael.mark",
+            EmailAddress = "michael.mark@oit.edu",
             FirstName = "Michael",
             LastName = "Mark",
             MiddleName = "Lee Scott",
-            EmailAddress = "michael.mark@oit.edu",
             SchoolId = schoolTracked.Entity.SchoolId,
             Argon2idPasswordId = passwordTracked.Entity.Argon2idPasswordId
         };
@@ -78,10 +79,12 @@ public class UserTests : IDisposable
         var insertedEntry = await _repo.Insert(entity);
         Assert.NotNull(insertedEntry);
         var inserted = insertedEntry.Entity;
+        Assert.Equal(entity.Username, inserted.Username);
+        Assert.Equal(entity.EmailAddress, inserted.EmailAddress);
+        Assert.Equal(entity.CreatedAt, inserted.CreatedAt);
         Assert.Equal(entity.FirstName, inserted.FirstName);
         Assert.Equal(entity.LastName, inserted.LastName);
         Assert.Equal(entity.MiddleName, inserted.MiddleName);
-        Assert.Equal(entity.EmailAddress, inserted.EmailAddress);
         Assert.NotNull(inserted.School);
         Assert.Equal(entity.SchoolId, inserted.SchoolId);
         Assert.NotNull(inserted.Argon2idPassword);
@@ -95,10 +98,11 @@ public class UserTests : IDisposable
 
         dto = new UserDto
         {
+            Username = "MichaelMark",
+            EmailAddress = "michaelmark.education@gmail.com",
             FirstName = "Michael",
             LastName = "Mark",
             MiddleName = "Lee Scott",
-            EmailAddress = "michaelmark.education@gmail.com",
             SchoolId = schoolTracked.Entity.SchoolId,
             Argon2idPasswordId = passwordTracked.Entity.Argon2idPasswordId
         };
@@ -108,10 +112,12 @@ public class UserTests : IDisposable
         var updatedEntry = await _repo.Update(key, entity);
         Assert.NotNull(updatedEntry);
         var updated = updatedEntry.Entity;
+        Assert.Equal(entity.Username, updated.Username);
+        Assert.Equal(entity.EmailAddress, updated.EmailAddress);
+        Assert.Equal(entity.CreatedAt, updated.CreatedAt);
         Assert.Equal(entity.FirstName, updated.FirstName);
         Assert.Equal(entity.LastName, updated.LastName);
         Assert.Equal(entity.MiddleName, updated.MiddleName);
-        Assert.Equal(entity.EmailAddress, updated.EmailAddress);
         Assert.NotNull(updated.School);
         Assert.Equal(entity.SchoolId, updated.SchoolId);
         Assert.NotNull(updated.Argon2idPassword);
