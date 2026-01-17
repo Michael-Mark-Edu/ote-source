@@ -32,10 +32,12 @@ public class UserDto : IDto<UserEntity>
         return new UserEntity
         {
             UserId = 0,
+            Username = Username,
+            EmailAddress = EmailAddress,
+            CreatedAt = CreatedAt,
             FirstName = FirstName,
             LastName = LastName,
             MiddleName = MiddleName,
-            EmailAddress = EmailAddress,
             SchoolId = SchoolId,
             Argon2idPasswordId = Argon2idPasswordId
         };
