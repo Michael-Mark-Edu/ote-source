@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace OTE.Data.Test;
 
+[Collection("Database Tests")]
 public class Argon2idPasswordTests : IDisposable
 {
     private OteContextFactory _factory = null!;

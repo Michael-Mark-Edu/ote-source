@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace OTE.Data.Test;
 
+[Collection("Database Tests")]
 public class UserTests : IDisposable
 {
     private OteContextFactory _factory = null!;

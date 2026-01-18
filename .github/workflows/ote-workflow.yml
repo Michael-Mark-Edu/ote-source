@@ -9,24 +9,13 @@ env:
 
 jobs:
   backend-test:
-    # container:
-    #   image: mcr.microsoft.com/dotnet/sdk:10.0
-    #   network: service
     runs-on: ubuntu-latest
-    # services:
-    #   db-service:
-    #     image: postgres:17
-    #     env:
-    #       POSTGRES_USER: postgres
-    #       POSTGRES_PASSWORD: postgres
-    #       POSTGRES_DB: ote
-    #     ports: ["5432"]
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup project
+    - name: Build project
       run: |
         cd backend
         dotnet build
@@ -56,10 +45,17 @@ jobs:
         export PATH="$PATH:/root/.dotnet/tools"
         dotnet ef database update
 
+    - name: Populate DB
+      run: sudo -u postgres psql -d ote -f database/scripts/populate.sql
+
     - name: Run tests
       run: |
-        cd backend
-        dotnet test
+        dotnet test backend/src/Data.Test --logger trx
+        find . -wholename '**/backend/src/routes/**/Test/*.csproj' -exec dotnet test --logger trx {} \;
+
+    - name: Get test results
+      if: always()
+      run: find . -name '*.trx' -exec cat {} \;
 
 
   frontend-upload-development:
