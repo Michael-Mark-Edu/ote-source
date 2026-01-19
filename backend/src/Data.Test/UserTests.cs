@@ -33,8 +33,7 @@ public class UserTests : IDisposable
     [Fact]
     public async Task BasicCRUDTest()
     {
-        var all = await _repo.GetAll();
-        Assert.NotNull(all);
+        var all = (await _repo.GetAll()).Unwrap();
         var initialCount = all.Count();
 
         var schoolRepo = new SchoolRepo(_context, new MockLambdaLogger());
@@ -48,8 +47,7 @@ public class UserTests : IDisposable
             State = "OR",
             City = "Nowhere"
         };
-        var schoolTracked = await schoolRepo.Insert(school);
-        Assert.NotNull(schoolTracked);
+        var schoolTracked = (await schoolRepo.Insert(school)).Unwrap();
 
         var password = new Argon2idPasswordEntity
         {
@@ -61,8 +59,7 @@ public class UserTests : IDisposable
             Salt = new byte[] { 1, 2, 3, 4 },
             Hash = new byte[] { 5, 6, 7, 8 }
         };
-        var passwordTracked = await passwordRepo.Insert(password);
-        Assert.NotNull(passwordTracked);
+        var passwordTracked = (await passwordRepo.Insert(password)).Unwrap();
 
         var dto = new UserDto
         {
@@ -77,8 +74,7 @@ public class UserTests : IDisposable
 
         var entity = dto.Map();
 
-        var insertedEntry = await _repo.Insert(entity);
-        Assert.NotNull(insertedEntry);
+        var insertedEntry = (await _repo.Insert(entity)).Unwrap();
         var inserted = insertedEntry.Entity;
         Assert.Equal(entity.Username, inserted.Username);
         Assert.Equal(entity.EmailAddress, inserted.EmailAddress);
@@ -93,7 +89,7 @@ public class UserTests : IDisposable
 
         var key = inserted.UserId;
 
-        all = await _repo.GetAll();
+        all = (await _repo.GetAll()).Unwrap();
         Assert.NotNull(all);
         Assert.Equal(initialCount + 1, all.Count());
 
@@ -110,7 +106,7 @@ public class UserTests : IDisposable
 
         entity = dto.Map();
 
-        var updatedEntry = await _repo.Update(key, entity);
+        var updatedEntry = (await _repo.Update(key, entity)).Unwrap();
         Assert.NotNull(updatedEntry);
         var updated = updatedEntry.Entity;
         Assert.Equal(entity.Username, updated.Username);
@@ -124,15 +120,15 @@ public class UserTests : IDisposable
         Assert.NotNull(updated.Argon2idPassword);
         Assert.Equal(entity.Argon2idPasswordId, updated.Argon2idPasswordId);
 
-        all = await _repo.GetAll();
+        all = (await _repo.GetAll()).Unwrap();
         Assert.NotNull(all);
         Assert.Equal(initialCount + 1, all.Count());
 
-        var deletedEntry = await _repo.Delete(key);
+        var deletedEntry = (await _repo.Delete(key)).Unwrap();
         Assert.NotNull(deletedEntry);
         var deleted = deletedEntry.Entity;
 
-        all = await _repo.GetAll();
+        all = (await _repo.GetAll()).Unwrap();
         Assert.NotNull(all);
         Assert.Equal(initialCount, all.Count());
     }

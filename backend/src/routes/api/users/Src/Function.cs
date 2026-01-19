@@ -47,8 +47,8 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayProxyRequest request, ILambdaContext context)
     {
-        var entities = await _userRepo.GetAll();
-        if (entities == null)
+        var entitiesResult = await _userRepo.GetAll();
+        if (!entitiesResult.Ok)
         {
             return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = 500,
@@ -57,6 +57,7 @@ public class Function
             };
         }
 
+        var entities = entitiesResult.Unwrap();
         var entitiesJson = JsonSerializer.Serialize(entities);
 
         return new APIGatewayHttpApiV2ProxyResponse {
@@ -98,8 +99,9 @@ public class Function
             };
         }
 
-        var inserted = await _userRepo.Insert(dto.Map());
-        if (inserted == null)
+        var insertResult = await _userRepo.Insert(dto.Map());
+
+        if (!insertResult.Ok)
         {
             return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = 500,
@@ -108,6 +110,7 @@ public class Function
             };
         }
 
+        var inserted = insertResult.Unwrap();
         var insertedJson = JsonSerializer.Serialize(inserted.Entity);
 
         return new APIGatewayHttpApiV2ProxyResponse {

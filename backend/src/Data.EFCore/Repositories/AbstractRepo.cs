@@ -1,6 +1,7 @@
 using Amazon.Lambda.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using OTE.Common;
 using OTE.Data.EFCore.Contexts;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -24,32 +25,30 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
     }
 
     /// <summary>Gets all entities in the table.</summary>
-    /// <returns>The entities in the table.</returns>
-    /// <remarks>Returns null if an exception occured.</remarks>
-    public virtual async Task<IEnumerable<TEntity>?> GetAll()
+    /// <returns>The entities in the table, or an `Exception` if this fails.</returns>
+    public virtual async Task<Result<IEnumerable<TEntity>, Exception>> GetAll()
     {
         try
         {
-            return await _queryable.ToListAsync();
+            return new(await _queryable.ToListAsync());
         }
         catch (Exception e)
         {
             logger.LogError(e.Message);
-            return null;
+            return new(e);
         }
     }
 
     /// <summary>Inserts an entity into the table.</summary>
     /// <param name="entity">The `TEntity` containing the data to insert into the table.</param>
-    /// <returns>A tracking entry of the inserted entity.</returns>
-    /// <remarks>Returns null if an exception occured.</remarks>
-    public virtual async ValueTask<EntityEntry<TEntity>?> Insert(TEntity entity)
+    /// <returns>A tracking entry of the inserted entity, or an `Exception` if this fails.</returns>
+    public virtual async ValueTask<Result<EntityEntry<TEntity>, Exception>> Insert(TEntity entity)
     {
         try
         {
             var entry = await _dbSet.AddAsync(entity);
             await context.SaveChangesAsync();
-            return entry;
+            return new(entry);
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
         {
@@ -57,27 +56,26 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
                 logger.LogError(e.Message);
             else
                 logger.LogError(e.InnerException.Message);
-            return null;
+            return new(e);
         }
         catch (Exception e)
         {
             logger.LogError(e.Message);
-            return null;
+            return new(e);
         }
     }
 
     /// <summary>Updates an entity in the table.</summary>
     /// <param name="key">The primary key of the table entity that you want to update.</param>
     /// <param name="entity">The `TEntity` containing the data to replace the table entity with.</param>
-    /// <returns>A tracking entry of the updated entity.</returns>
-    /// <remarks>Returns null if an exception occured, or if no objects with the key exist in the table.</remarks>
-    public virtual async Task<EntityEntry<TEntity>?> Update(object key, TEntity entity)
+    /// <returns>A tracking entry of the updated entity, or null if no object with the key exists, or an `Exception` if this fails.</returns>
+    public virtual async Task<Result<EntityEntry<TEntity>?, Exception>> Update(object key, TEntity entity)
     {
         try
         {
             TEntity? target = await _dbSet.FindAsync(key);
             if (target == null)
-                return null;
+                return new((EntityEntry<TEntity>?)null);
 
             foreach (var property in typeof(TEntity).GetProperties())
             {
@@ -91,7 +89,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
 
             var update = _dbSet.Update(target);
             await context.SaveChangesAsync();
-            return update;
+            return new(update);
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
         {
@@ -99,30 +97,29 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
                 logger.LogError(e.Message);
             else
                 logger.LogError(e.InnerException.Message);
-            return null;
+            return new(e);
         }
         catch (Exception e)
         {
             logger.LogError(e.Message);
-            return null;
+            return new(e);
         }
     }
 
     /// <summary>Deletes an entity in the table.</summary>
     /// <param name="key">The primary key of the table entity that you want to delete.</param>
-    /// <returns>A tracking entry of the deleted entity.</returns>
-    /// <remarks>Returns null if an exception occured, or if no objects with the key exist in the table.</remarks>
-    public virtual async Task<EntityEntry<TEntity>?> Delete(object key)
+    /// <returns>A tracking entry of the deleted entity, or null if no object with the key exists, or an `Exception` if this fails.</returns>
+    public virtual async Task<Result<EntityEntry<TEntity>?, Exception>> Delete(object key)
     {
         try
         {
             TEntity? dbEntity = await _dbSet.FindAsync(key);
             if (dbEntity == null)
-                return null;
+                return new((EntityEntry<TEntity>?)null);
 
             var removed = _dbSet.Remove(dbEntity);
             await context.SaveChangesAsync();
-            return removed;
+            return new(removed);
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
         {
@@ -130,12 +127,12 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
                 logger.LogError(e.Message);
             else
                 logger.LogError(e.InnerException.Message);
-            return null;
+            return new(e);
         }
         catch (Exception e)
         {
             logger.LogError(e.Message);
-            return null;
+            return new(e);
         }
     }
 }

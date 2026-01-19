@@ -33,8 +33,7 @@ public class SchoolTests : IDisposable
     [Fact]
     public async Task BasicCRUDTest()
     {
-        var all = await _repo.GetAll();
-        Assert.NotNull(all);
+        var all = (await _repo.GetAll()).Unwrap();
         var initialCount = all.Count();
 
         var dto = new SchoolDto
@@ -47,8 +46,7 @@ public class SchoolTests : IDisposable
 
         var entity = dto.Map();
 
-        var insertedEntry = await _repo.Insert(entity);
-        Assert.NotNull(insertedEntry);
+        var insertedEntry = (await _repo.Insert(entity)).Unwrap();
         var inserted = insertedEntry.Entity;
         Assert.Equal(entity.Name, inserted.Name);
         Assert.Equal(entity.Acronym, inserted.Acronym);
@@ -57,8 +55,7 @@ public class SchoolTests : IDisposable
 
         var key = inserted.SchoolId;
 
-        all = await _repo.GetAll();
-        Assert.NotNull(all);
+        all = (await _repo.GetAll()).Unwrap();
         Assert.Equal(initialCount + 1, all.Count());
 
         dto = new SchoolDto
@@ -71,7 +68,7 @@ public class SchoolTests : IDisposable
 
         entity = dto.Map();
 
-        var updatedEntry = await _repo.Update(key, entity);
+        var updatedEntry = (await _repo.Update(key, entity)).Unwrap();
         Assert.NotNull(updatedEntry);
         var updated = updatedEntry.Entity;
         Assert.Equal(entity.Name, updated.Name);
@@ -79,15 +76,15 @@ public class SchoolTests : IDisposable
         Assert.Equal(entity.State, updated.State);
         Assert.Equal(entity.City, updated.City);
 
-        all = await _repo.GetAll();
+        all = (await _repo.GetAll()).Unwrap();
         Assert.NotNull(all);
         Assert.Equal(initialCount + 1, all.Count());
 
-        var deletedEntry = await _repo.Delete(key);
+        var deletedEntry = (await _repo.Delete(key)).Unwrap();
         Assert.NotNull(deletedEntry);
         var deleted = deletedEntry.Entity;
 
-        all = await _repo.GetAll();
+        all = (await _repo.GetAll()).Unwrap();
         Assert.NotNull(all);
         Assert.Equal(initialCount, all.Count());
     }
