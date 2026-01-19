@@ -20,14 +20,16 @@ public class Function
     private UserRepo _userRepo = null!;
 
     [LambdaFunction]
-    [RestApi(LambdaHttpMethod.Any, "/api/users")]
-    public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
+    [HttpApi(LambdaHttpMethod.Any, "/api/users")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
         _factory = new OteContextFactory();
         _dbContext = _factory.CreateDbContext();
         _userRepo = new UserRepo(_dbContext, context.Logger);
 
-        switch (request.HttpMethod)
+        string method = request.RequestContext.Http.Method;
+
+        switch (method)
         {
             case "GET":
                 return await get(request, context);
@@ -36,7 +38,7 @@ public class Function
             default:
                 return new APIGatewayHttpApiV2ProxyResponse {
                     StatusCode = 405,
-                    Body = "Invalid HTTP method " + request.HttpMethod,
+                    Body = $"Method \"{method}\" Not Allowed",
                     Headers = new Dictionary<string, string> {
                         { "Content-Type", "text/plain" },
                         { "Allow", "GET, POST" }
@@ -45,14 +47,15 @@ public class Function
         }
     }
 
-    private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayProxyRequest request, ILambdaContext context)
+    private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
         var entitiesResult = await _userRepo.GetAll();
         if (!entitiesResult.Ok)
         {
+            context.Logger.LogError("500: UserRepo.GetAll() failed unexpectedly");
             return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = 500,
-                Body = "Could not read from database",
+                Body = "Internal Server Error",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
             };
         }
@@ -67,26 +70,41 @@ public class Function
         };
     }
 
-    private async Task<APIGatewayHttpApiV2ProxyResponse> post(APIGatewayProxyRequest request, ILambdaContext context)
+    private async Task<APIGatewayHttpApiV2ProxyResponse> post(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
         UserDto? dto;
         try
         {
-            dto = JsonSerializer.Deserialize<UserDto>(request.Body);
+            string body;
+            if (request.IsBase64Encoded)
+                body = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(request.Body));
+            else
+                body = request.Body;
+
+            dto = JsonSerializer.Deserialize<UserDto>(body);
         }
         catch (JsonException e)
         {
             return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = 400,
-                Body = $"Request body contains invalid JSON data.\n\n{e.Message}",
+                Body = $"Request body contains invalid JSON data. ${e.Message}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+            };
+        }
+        catch (ArgumentNullException)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse {
+                StatusCode = 400,
+                Body = $"Request body must contain JSON data of the entity to insert.",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
             };
         }
         catch (Exception e)
         {
+            context.Logger.LogError($"Unknown exception occured: {e.Message}");
             return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = 500,
-                Body = $"Unknown exception occured.\n\n{e.Message}",
+                Body = "Internal Server Error",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
             };
         }
@@ -103,9 +121,10 @@ public class Function
 
         if (!insertResult.Ok)
         {
+            context.Logger.LogError("500: UserRepo.Insert() failed unexpectedly");
             return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = 500,
-                Body = "Could not access data from database.",
+                Body = "Internal Server Error",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
             };
         }

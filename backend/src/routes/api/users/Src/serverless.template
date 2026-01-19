@@ -29,7 +29,7 @@
         "Handler": "Users::OTE.Routes.Api.Users.Function_FunctionHandler_Generated::FunctionHandler",
         "Events": {
           "RootAny": {
-            "Type": "Api",
+            "Type": "HttpApi",
             "Properties": {
               "Path": "/api/users",
               "Method": "ANY"

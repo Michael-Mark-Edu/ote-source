@@ -15,9 +15,10 @@ public class FunctionTest
     {
         var function = new Function();
         var context = new TestLambdaContext();
-        var request = new APIGatewayProxyRequest();
-
-        request.HttpMethod = "GET";
+        var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.RequestContext = new();
+        request.RequestContext.Http = new();
+        request.RequestContext.Http.Method = "GET";
 
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
@@ -42,9 +43,11 @@ public class FunctionTest
     {
         var function = new Function();
         var context = new TestLambdaContext();
-        var request = new APIGatewayProxyRequest();
+        var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.RequestContext = new();
+        request.RequestContext.Http = new();
+        request.RequestContext.Http.Method = "POST";
 
-        request.HttpMethod = "POST";
         request.Body = JsonSerializer.Serialize(new UserDto
         {
             Username = "_TEST_USERNAME",
@@ -72,6 +75,5 @@ public class FunctionTest
         {
             Assert.Fail(e.Message);
         }
-
     }
 }
