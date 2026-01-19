@@ -51,7 +51,7 @@ jobs:
     - name: Run tests
       run: |
         dotnet test backend/src/Data.Test --logger trx
-        find . -wholename '**/backend/src/routes/**/Test/*.csproj' -exec dotnet test --logger trx {} \;
+        find . -wholename '**/backend/src/routes/**/Test/*.csproj' -print0 | xargs -0 -I {} dotnet test --logger trx {}
 
     - name: Get test results
       if: always()
