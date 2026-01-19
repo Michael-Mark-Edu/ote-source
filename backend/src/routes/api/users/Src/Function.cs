@@ -52,12 +52,24 @@ public class Function
         var entitiesResult = await _userRepo.GetAll();
         if (!entitiesResult.Ok)
         {
-            context.Logger.LogError("500: UserRepo.GetAll() failed unexpectedly");
-            return new APIGatewayHttpApiV2ProxyResponse {
-                StatusCode = 500,
-                Body = "Internal Server Error",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
-            };
+            if (entitiesResult.UnwrapError().Message == "An exception has been raised that is likely due to a transient failure.")
+            {
+                context.Logger.LogError("500: UserRepo.GetAll() transient failure; is the DB down?");
+                return new APIGatewayHttpApiV2ProxyResponse {
+                    StatusCode = 500,
+                    Body = "Internal Server Error",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                };
+            }
+            else
+            {
+                context.Logger.LogError("500: UserRepo.GetAll() failed with uncaught error");
+                return new APIGatewayHttpApiV2ProxyResponse {
+                    StatusCode = 500,
+                    Body = "Internal Server Error",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                };
+            }
         }
 
         var entities = entitiesResult.Unwrap();
@@ -121,12 +133,41 @@ public class Function
 
         if (!insertResult.Ok)
         {
-            context.Logger.LogError("500: UserRepo.Insert() failed unexpectedly");
-            return new APIGatewayHttpApiV2ProxyResponse {
-                StatusCode = 500,
-                Body = "Internal Server Error",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
-            };
+            switch (insertResult.UnwrapError().Message.Substring(0, 5))
+            {
+            case "An ex":
+                context.Logger.LogError("500: UserRepo.Insert() transient failure; is the DB down?");
+                return new APIGatewayHttpApiV2ProxyResponse {
+                    StatusCode = 500,
+                    Body = "Internal Server Error",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                };
+            case "23502":
+                return new APIGatewayHttpApiV2ProxyResponse {
+                    StatusCode = 409,
+                    Body = "Non-nullable property is null.",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                };
+            case "23503":
+                return new APIGatewayHttpApiV2ProxyResponse {
+                    StatusCode = 409,
+                    Body = "Invalid foreign key(s).",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                };
+            case "23505":
+                return new APIGatewayHttpApiV2ProxyResponse {
+                    StatusCode = 409,
+                    Body = "User already exists.",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                };
+            default:
+                context.Logger.LogError("500: UserRepo.Insert() failed with uncaught error");
+                return new APIGatewayHttpApiV2ProxyResponse {
+                    StatusCode = 500,
+                    Body = "Internal Server Error",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                };
+            }
         }
 
         var inserted = insertResult.Unwrap();

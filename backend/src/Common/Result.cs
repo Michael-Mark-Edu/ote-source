@@ -51,6 +51,17 @@ public sealed class Result<TValue, TError>
         return Value!;
     }
 
+    /// <summary>Force-get the error of the `Result`.</summary>
+    /// <returns>The stored error.</returns>
+    /// <exception cref="BadUnwrapException">Thrown if the `Result` is ok.</exception>
+    public TError UnwrapError()
+    {
+        if (Ok)
+            throw new BadUnwrapException();
+
+        return Error!;
+    }
+
     /// <summary>
     /// Monadic bind-function. Applies a function to the stored value, potentially changing the value type.
     ///

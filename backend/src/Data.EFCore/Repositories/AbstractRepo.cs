@@ -50,7 +50,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             await context.SaveChangesAsync();
             return new(entry);
         }
-        catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
+        catch (DbUpdateException e)
         {
             if (e.InnerException == null)
                 logger.LogError(e.Message);
