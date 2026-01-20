@@ -14,7 +14,7 @@ public class SchoolTests : IDisposable
     {
         _factory = new OteContextFactory();
         _context = _factory.CreateDbContext();
-        _repo = new SchoolRepo(_context, new MockLambdaLogger());
+        _repo = new SchoolRepo(_context);
         _transaction = _context.Database.BeginTransaction();
     }
 

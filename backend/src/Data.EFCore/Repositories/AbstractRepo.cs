@@ -1,4 +1,3 @@
-using Amazon.Lambda.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Npgsql;
@@ -11,9 +10,8 @@ namespace OTE.Data.EFCore.Repositories;
 
 /// <summary>Abstract class that implements virtual repository methods.</summary>
 /// <param name="context">The `OteContext` to use for database CRUD.</param>
-/// <param name="logger">The `ILambdaLogger` used for logging.</param>
 /// <typeparam name="TEntity">The entity type the repository uses.</typeparam>
-public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger logger)
+public abstract class AbstractRepo<TEntity>(OteContext context)
     where TEntity : class
 {
     protected DbSet<TEntity> _dbSet = context.Set<TEntity>();

@@ -14,7 +14,7 @@ public class UserTests : IDisposable
     {
         _factory = new OteContextFactory();
         _context = _factory.CreateDbContext();
-        _repo = new UserRepo(_context, new MockLambdaLogger());
+        _repo = new UserRepo(_context);
         _transaction = _context.Database.BeginTransaction();
     }
 
@@ -36,8 +36,8 @@ public class UserTests : IDisposable
         var all = (await _repo.GetAll()).Unwrap();
         var initialCount = all.Count();
 
-        var schoolRepo = new SchoolRepo(_context, new MockLambdaLogger());
-        var passwordRepo = new Argon2idPasswordRepo(_context, new MockLambdaLogger());
+        var schoolRepo = new SchoolRepo(_context);
+        var passwordRepo = new Argon2idPasswordRepo(_context);
 
         var school = new SchoolEntity
         {

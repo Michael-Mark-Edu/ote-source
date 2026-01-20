@@ -26,7 +26,7 @@ public class Function
     {
         _factory = new OteContextFactory();
         _dbContext = _factory.CreateDbContext();
-        _userRepo = new UserRepo(_dbContext, context.Logger);
+        _userRepo = new UserRepo(_dbContext);
 
         string method = request.RequestContext.Http.Method;
 
