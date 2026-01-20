@@ -27,7 +27,7 @@ public class FunctionTest
 
         try
         {
-            var entities = JsonSerializer.Deserialize<IEnumerable<UserEntity>>(response.Body);
+            var entities = JsonSerializer.Deserialize<IEnumerable<UserGetDto>>(response.Body);
             Assert.NotNull(entities);
 
             Console.WriteLine(response.Body);
@@ -70,7 +70,7 @@ public class FunctionTest
 
         try
         {
-            var entities = JsonSerializer.Deserialize<UserEntity>(response.Body);
+            var entities = JsonSerializer.Deserialize<UserGetDto>(response.Body);
             Assert.NotNull(entities);
 
             Console.WriteLine(response.Body);

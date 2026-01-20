@@ -70,7 +70,8 @@ public class Function
         }
 
         var entities = entitiesResult.Unwrap();
-        var entitiesJson = JsonSerializer.Serialize(entities);
+        var entityGetDtos = entities.Select((e, i) => new UserGetDto(e));
+        var entitiesJson = JsonSerializer.Serialize(entityGetDtos);
 
         return new APIGatewayHttpApiV2ProxyResponse {
             StatusCode = 200,
@@ -165,7 +166,8 @@ public class Function
         // TODO: Add IGetDto
 
         var inserted = userInsertResult.Unwrap();
-        var insertedJson = JsonSerializer.Serialize(inserted.Entity);
+        var insertedGetDto = new UserGetDto(inserted.Entity);
+        var insertedJson = JsonSerializer.Serialize(insertedGetDto);
 
         return new APIGatewayHttpApiV2ProxyResponse {
             StatusCode = 200,
