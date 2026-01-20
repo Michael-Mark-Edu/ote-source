@@ -26,4 +26,10 @@ public class SchoolEntity
     [MaxLength(255)]
     [JsonPropertyName("city")]
     public string? City { get; set; } = null;
+
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [JsonPropertyName("deletedAt")]
+    public DateTime? DeletedAt { get; set; } = null;
 }

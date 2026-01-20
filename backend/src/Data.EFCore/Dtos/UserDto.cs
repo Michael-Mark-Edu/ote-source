@@ -18,6 +18,9 @@ public class UserDto : IDto<UserEntity>
     [JsonPropertyName("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    [JsonPropertyName("deletedAt")]
+    public DateTime? DeletedAt { get; set; } = null;
+
     [MaxLength(255)]
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; } = null;
@@ -44,6 +47,7 @@ public class UserDto : IDto<UserEntity>
             Username = Username,
             EmailAddress = EmailAddress,
             CreatedAt = CreatedAt,
+            DeletedAt = DeletedAt,
             FirstName = FirstName,
             LastName = LastName,
             MiddleName = MiddleName,

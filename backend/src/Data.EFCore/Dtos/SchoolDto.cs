@@ -24,6 +24,12 @@ public class SchoolDto : IDto<SchoolEntity>
     [JsonPropertyName("city")]
     public string? City { get; set; } = null;
 
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [JsonPropertyName("deletedAt")]
+    public DateTime? DeletedAt { get; set; } = null;
+
     public SchoolEntity Map()
     {
         return new SchoolEntity
@@ -32,7 +38,9 @@ public class SchoolDto : IDto<SchoolEntity>
             Name = Name,
             Acronym = Acronym,
             State = State,
-            City = City
+            City = City,
+            CreatedAt = CreatedAt,
+            DeletedAt = DeletedAt
         };
     }
 }

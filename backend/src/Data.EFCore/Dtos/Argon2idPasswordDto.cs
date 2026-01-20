@@ -24,6 +24,12 @@ public class Argon2idPasswordDto : IDto<Argon2idPasswordEntity>
     [JsonPropertyName("hash")]
     public byte[] Hash { get; set; } = null!;
 
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [JsonPropertyName("deletedAt")]
+    public DateTime? DeletedAt { get; set; } = null;
+
     public Argon2idPasswordEntity Map()
     {
         return new Argon2idPasswordEntity
@@ -34,7 +40,9 @@ public class Argon2idPasswordDto : IDto<Argon2idPasswordEntity>
             Iterations = Iterations,
             Parallelism = Parallelism,
             Salt = Salt,
-            Hash = Hash
+            Hash = Hash,
+            CreatedAt = CreatedAt,
+            DeletedAt = DeletedAt
         };
     }
 }

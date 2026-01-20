@@ -25,6 +25,9 @@ public class UserEntity
     [JsonPropertyName("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    [JsonPropertyName("deletedAt")]
+    public DateTime? DeletedAt { get; set; } = null;
+
     [MaxLength(255)]
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; } = null;

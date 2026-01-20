@@ -27,4 +27,10 @@ public class Argon2idPasswordEntity
 
     [JsonPropertyName("hash")]
     public byte[] Hash { get; set; } = null!;
+
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [JsonPropertyName("deletedAt")]
+    public DateTime? DeletedAt { get; set; } = null;
 }

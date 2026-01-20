@@ -13,8 +13,9 @@ public class UserRepo(OteContext context) : AbstractRepo<UserEntity>(context)
         get
         {
             return _dbSet
-                .Include(d => d.School)
-                .Include(d => d.Argon2idPassword);
+                .Include(e => e.School)
+                .Include(e => e.Argon2idPassword)
+                .Where(e => e.DeletedAt == null);
         }
     }
 }
