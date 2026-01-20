@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace OTE.Data.EFCore.Dtos;
 
-/// <summary>`IDto` corresponding to `Argon2idPasswordEntity`.</summary>
-public class Argon2idPasswordDto : IDto<Argon2idPasswordEntity>
+/// <summary>`IInsertableDto` corresponding to `Argon2idPasswordEntity`.</summary>
+public class Argon2idPasswordDto : IInsertableDto<Argon2idPasswordEntity>
 {
     [JsonPropertyName("version")]
     public byte Version { get; set; }

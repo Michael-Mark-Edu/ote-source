@@ -4,8 +4,8 @@ using OTE.Data.EFCore.Entities;
 
 namespace OTE.Data.EFCore.Dtos;
 
-/// <summary>`IDto` corresponding to `SchoolEntity`.</summary>
-public class SchoolDto : IDto<SchoolEntity>
+/// <summary>`IInsertableDto` corresponding to `SchoolEntity`.</summary>
+public class SchoolDto : IInsertableDto<SchoolEntity>
 {
     [MaxLength(255)]
     [JsonPropertyName("name")]
