@@ -31,9 +31,22 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
         {
             return new(await _queryable.ToListAsync());
         }
-        catch (NpgsqlException e)
+        catch (Exception e)
         {
-            return new(e);
+            for (Exception? i = e; i != null; i = i.InnerException)
+            {
+                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
+                    return new ((NpgsqlException)i);
+            }
+            throw;
+        }
+    }
+
+    public virtual async Task<Result<TEntity?, NpgsqlException>> FindById(object key)
+    {
+        try
+        {
+            return new(await _dbSet.FindAsync(key));
         }
         catch (Exception e)
         {
@@ -49,7 +62,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
     /// <summary>Inserts an entity into the table.</summary>
     /// <param name="entity">The `TEntity` containing the data to insert into the table.</param>
     /// <returns>A tracking entry of the inserted entity, or an `Exception` if this fails.</returns>
-    public virtual async ValueTask<Result<EntityEntry<TEntity>, NpgsqlException>> Insert(TEntity entity)
+    public virtual async Task<Result<EntityEntry<TEntity>, NpgsqlException>> Insert(TEntity entity)
     {
         try
         {

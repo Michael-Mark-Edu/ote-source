@@ -58,6 +58,11 @@ public class SchoolTests : IDisposable
         all = (await _repo.GetAll()).Unwrap();
         Assert.Equal(initialCount + 1, all.Count());
 
+        var firstId = all.First().SchoolId;
+        var first = (await _repo.FindById(firstId)).Unwrap();
+        Assert.NotNull(first);
+        Assert.Equal(firstId, first.SchoolId);
+
         dto = new SchoolDto
         {
             Name = "Baz Quz",

@@ -1,7 +1,6 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Annotations;
-using Amazon.Lambda.Annotations.APIGateway;
 using System.Text.Json;
 using OTE.Common;
 using OTE.Data.EFCore.Contexts;
@@ -22,7 +21,6 @@ public class Function
     private Argon2idPasswordRepo _passwordRepo = null!;
 
     [LambdaFunction]
-    [HttpApi(LambdaHttpMethod.Any, "/api/users")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
         _factory = new OteContextFactory();

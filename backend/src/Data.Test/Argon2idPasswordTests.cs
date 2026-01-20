@@ -62,6 +62,11 @@ public class Argon2idPasswordTests : IDisposable
         all = (await _repo.GetAll()).Unwrap();
         Assert.Equal(initialCount + 1, all.Count());
 
+        var firstId = all.First().Argon2idPasswordId;
+        var first = (await _repo.FindById(firstId)).Unwrap();
+        Assert.NotNull(first);
+        Assert.Equal(firstId, first.Argon2idPasswordId);
+
         dto = new Argon2idPasswordDto
         {
             Version = 10,

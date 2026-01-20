@@ -93,6 +93,11 @@ public class UserTests : IDisposable
         Assert.NotNull(all);
         Assert.Equal(initialCount + 1, all.Count());
 
+        var firstId = all.First().UserId;
+        var first = (await _repo.FindById(firstId)).Unwrap();
+        Assert.NotNull(first);
+        Assert.Equal(firstId, first.UserId);
+
         dto = new UserDto
         {
             Username = "MichaelMark",
