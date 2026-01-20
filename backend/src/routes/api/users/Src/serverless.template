@@ -6,16 +6,7 @@
     "OTERoutesApiUsersFunctionFunctionHandlerGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
-        "Tool": "Amazon.Lambda.Annotations",
-        "SyncedEvents": [
-          "RootAny"
-        ],
-        "SyncedEventProperties": {
-          "RootAny": [
-            "Path",
-            "Method"
-          ]
-        }
+        "Tool": "Amazon.Lambda.Annotations"
       },
       "Properties": {
         "Runtime": "dotnet10",
@@ -27,15 +18,7 @@
         ],
         "PackageType": "Zip",
         "Handler": "Users::OTE.Routes.Api.Users.Function_FunctionHandler_Generated::FunctionHandler",
-        "Events": {
-          "RootAny": {
-            "Type": "HttpApi",
-            "Properties": {
-              "Path": "/api/users",
-              "Method": "ANY"
-            }
-          }
-        }
+        "Events": {}
       }
     }
   }

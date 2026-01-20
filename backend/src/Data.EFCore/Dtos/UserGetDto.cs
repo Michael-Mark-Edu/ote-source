@@ -7,6 +7,9 @@ namespace OTE.Data.EFCore.Dtos;
 /// <summary>`IGetDto` for returning users for a GET request.</summary>
 public class UserGetDto : IGetDto<UserEntity>
 {
+    [JsonPropertyName("userId")]
+    public int UserId { get; set; }
+
     [MaxLength(255)]
     [JsonPropertyName("username")]
     public string Username { get; set; } = string.Empty;
@@ -32,6 +35,7 @@ public class UserGetDto : IGetDto<UserEntity>
 
     public UserGetDto(UserEntity userEntity)
     {
+        UserId = userEntity.UserId;
         Username = userEntity.Username;
         EmailAddress = userEntity.EmailAddress;
         FirstName = userEntity.FirstName;
@@ -41,8 +45,9 @@ public class UserGetDto : IGetDto<UserEntity>
     }
 
     [JsonConstructor]
-    public UserGetDto(string username, string emailAddress, string? firstName, string? lastName, string? middleName, int schoolId)
+    public UserGetDto(int userId, string username, string emailAddress, string? firstName, string? lastName, string? middleName, int schoolId)
     {
+        UserId = userId;
         Username = username;
         EmailAddress = emailAddress;
         FirstName = firstName;
