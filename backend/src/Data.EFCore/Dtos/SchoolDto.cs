@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using OTE.Data.EFCore.Entities;
 
 namespace OTE.Data.EFCore.Dtos;
@@ -7,16 +8,20 @@ namespace OTE.Data.EFCore.Dtos;
 public class SchoolDto : IDto<SchoolEntity>
 {
     [MaxLength(255)]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
     [MaxLength(10)]
+    [JsonPropertyName("acronym")]
     public string Acronym { get; set; } = string.Empty;
 
     [MaxLength(2)]
     [MinLength(2)]
+    [JsonPropertyName("state")]
     public string? State { get; set; } = null;
 
     [MaxLength(255)]
+    [JsonPropertyName("city")]
     public string? City { get; set; } = null;
 
     public SchoolEntity Map()
