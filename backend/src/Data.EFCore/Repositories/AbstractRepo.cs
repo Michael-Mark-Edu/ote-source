@@ -1,6 +1,7 @@
 using Amazon.Lambda.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Npgsql;
 using OTE.Common;
 using OTE.Data.EFCore.Contexts;
 using System.ComponentModel.DataAnnotations;
@@ -26,23 +27,31 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
 
     /// <summary>Gets all entities in the table.</summary>
     /// <returns>The entities in the table, or an `Exception` if this fails.</returns>
-    public virtual async Task<Result<IEnumerable<TEntity>, Exception>> GetAll()
+    public virtual async Task<Result<IEnumerable<TEntity>, NpgsqlException>> GetAll()
     {
         try
         {
             return new(await _queryable.ToListAsync());
         }
+        catch (NpgsqlException e)
+        {
+            return new(e);
+        }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
-            return new(e);
+            for (Exception? i = e; i != null; i = i.InnerException)
+            {
+                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
+                    return new ((NpgsqlException)i);
+            }
+            throw;
         }
     }
 
     /// <summary>Inserts an entity into the table.</summary>
     /// <param name="entity">The `TEntity` containing the data to insert into the table.</param>
     /// <returns>A tracking entry of the inserted entity, or an `Exception` if this fails.</returns>
-    public virtual async ValueTask<Result<EntityEntry<TEntity>, Exception>> Insert(TEntity entity)
+    public virtual async ValueTask<Result<EntityEntry<TEntity>, NpgsqlException>> Insert(TEntity entity)
     {
         try
         {
@@ -50,18 +59,14 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             await context.SaveChangesAsync();
             return new(entry);
         }
-        catch (DbUpdateException e)
-        {
-            if (e.InnerException == null)
-                logger.LogError(e.Message);
-            else
-                logger.LogError(e.InnerException.Message);
-            return new(e);
-        }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
-            return new(e);
+            for (Exception? i = e; i != null; i = i.InnerException)
+            {
+                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
+                    return new ((NpgsqlException)i);
+            }
+            throw;
         }
     }
 
@@ -69,7 +74,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
     /// <param name="key">The primary key of the table entity that you want to update.</param>
     /// <param name="entity">The `TEntity` containing the data to replace the table entity with.</param>
     /// <returns>A tracking entry of the updated entity, or null if no object with the key exists, or an `Exception` if this fails.</returns>
-    public virtual async Task<Result<EntityEntry<TEntity>?, Exception>> Update(object key, TEntity entity)
+    public virtual async Task<Result<EntityEntry<TEntity>?, NpgsqlException>> Update(object key, TEntity entity)
     {
         try
         {
@@ -91,25 +96,21 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             await context.SaveChangesAsync();
             return new(update);
         }
-        catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
-        {
-            if (e.InnerException == null)
-                logger.LogError(e.Message);
-            else
-                logger.LogError(e.InnerException.Message);
-            return new(e);
-        }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
-            return new(e);
+            for (Exception? i = e; i != null; i = i.InnerException)
+            {
+                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
+                    return new ((NpgsqlException)i);
+            }
+            throw;
         }
     }
 
     /// <summary>Deletes an entity in the table.</summary>
     /// <param name="key">The primary key of the table entity that you want to delete.</param>
     /// <returns>A tracking entry of the deleted entity, or null if no object with the key exists, or an `Exception` if this fails.</returns>
-    public virtual async Task<Result<EntityEntry<TEntity>?, Exception>> Delete(object key)
+    public virtual async Task<Result<EntityEntry<TEntity>?, NpgsqlException>> Delete(object key)
     {
         try
         {
@@ -121,18 +122,14 @@ public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger lo
             await context.SaveChangesAsync();
             return new(removed);
         }
-        catch (Microsoft.EntityFrameworkCore.DbUpdateException e)
-        {
-            if (e.InnerException == null)
-                logger.LogError(e.Message);
-            else
-                logger.LogError(e.InnerException.Message);
-            return new(e);
-        }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
-            return new(e);
+            for (Exception? i = e; i != null; i = i.InnerException)
+            {
+                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
+                    return new ((NpgsqlException)i);
+            }
+            throw;
         }
     }
 }
