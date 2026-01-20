@@ -32,19 +32,19 @@ public class Function
 
         switch (method)
         {
-            case "GET":
-                return await get(request, context);
-            case "POST":
-                return await post(request, context);
-            default:
-                return new APIGatewayHttpApiV2ProxyResponse {
-                    StatusCode = 405,
-                    Body = $"Method \"{method}\" Not Allowed",
-                    Headers = new Dictionary<string, string> {
-                        { "Content-Type", "text/plain" },
-                        { "Allow", "GET, POST" }
-                    }
-                };
+        case "GET":
+            return await get(request, context);
+        case "POST":
+            return await post(request, context);
+        default:
+            return new APIGatewayHttpApiV2ProxyResponse {
+                StatusCode = 405,
+                Body = $"Method \"{method}\" Not Allowed",
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "text/plain" },
+                    { "Allow", "GET, POST" }
+                }
+            };
         }
     }
 
