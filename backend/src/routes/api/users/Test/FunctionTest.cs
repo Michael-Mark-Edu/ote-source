@@ -48,21 +48,25 @@ public class FunctionTest
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "POST";
 
-        request.Body = JsonSerializer.Serialize(new UserDto
+        request.Body = JsonSerializer.Serialize(new UserPostDto
         {
             Username = "_TEST_USERNAME",
             EmailAddress = "_TEST_EMAIL",
             FirstName = "_TEST_FIRST_NAME",
             LastName = "_TEST_LAST_NAME",
             MiddleName = "_TEST_MIDDLE_NAME",
-            SchoolId = 1,
-            Argon2idPasswordId = 1
+            Password = "_TEST_PASSWORD",
+            SchoolId = 1
         });
 
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
 
-        Assert.Equal(200, response.StatusCode);
+        if (response.StatusCode != 200)
+        {
+            Console.WriteLine(response.Body);
+            Assert.Equal(200, response.StatusCode);
+        }
 
         try
         {

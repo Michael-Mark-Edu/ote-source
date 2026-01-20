@@ -19,6 +19,7 @@ public class Function
     private OteContextFactory _factory = null!;
     private OteContext _dbContext = null!;
     private UserRepo _userRepo = null!;
+    private Argon2idPasswordRepo _passwordRepo = null!;
 
     [LambdaFunction]
     [HttpApi(LambdaHttpMethod.Any, "/api/users")]
@@ -27,6 +28,7 @@ public class Function
         _factory = new OteContextFactory();
         _dbContext = _factory.CreateDbContext();
         _userRepo = new UserRepo(_dbContext);
+        _passwordRepo = new Argon2idPasswordRepo(_dbContext);
 
         string method = request.RequestContext.Http.Method;
 
@@ -79,7 +81,7 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> post(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        UserDto? dto;
+        UserPostDto? dto;
         try
         {
             string body;
@@ -88,7 +90,7 @@ public class Function
             else
                 body = request.Body;
 
-            dto = JsonSerializer.Deserialize<UserDto>(body);
+            dto = JsonSerializer.Deserialize<UserPostDto>(body);
         }
         catch (JsonException e)
         {
@@ -124,12 +126,29 @@ public class Function
             };
         }
 
-        dto.CreatedAt = dto.CreatedAt.ToUniversalTime();
-        var insertResult = await _userRepo.Insert(dto.Map());
+        var dtoResults = dto.Map();
 
-        if (!insertResult.Ok)
+        var passwordInsertResult = await _passwordRepo.Insert(dtoResults.Argon2idPasswordEntity);
+        if (!passwordInsertResult.Ok)
         {
-            var error = insertResult.UnwrapError();
+            var error = passwordInsertResult.UnwrapError();
+            var errorData = DatabaseErrorHandler.Parse(error);
+
+            if (errorData.LogMessage != null)
+                context.Logger.LogError($"Argon2idPasswordRepo.Insert() error: {errorData.LogMessage}");
+
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = errorData.HttpStatus,
+                Body = errorData.BodyMessage,
+                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+            };
+        }
+
+        var userInsertResult = await _userRepo.Insert(dtoResults.UserEntity);
+        if (!userInsertResult.Ok)
+        {
+            var error = userInsertResult.UnwrapError();
             var errorData = DatabaseErrorHandler.Parse(error);
 
             if (errorData.LogMessage != null)
@@ -143,7 +162,9 @@ public class Function
             };
         }
 
-        var inserted = insertResult.Unwrap();
+        // TODO: Add IGetDto
+
+        var inserted = userInsertResult.Unwrap();
         var insertedJson = JsonSerializer.Serialize(inserted.Entity);
 
         return new APIGatewayHttpApiV2ProxyResponse {
