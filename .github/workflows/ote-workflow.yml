@@ -15,6 +15,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Check formatting
+      run: |
+        cd backend
+        dotnet format --verify-no-changes
+
     - name: Build project
       run: |
         cd backend

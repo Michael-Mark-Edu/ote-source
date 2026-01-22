@@ -32,19 +32,20 @@ public class Function
 
         switch (method)
         {
-        case "GET":
-            return await get(request, context);
-        case "POST":
-            return await post(request, context);
-        default:
-            return new APIGatewayHttpApiV2ProxyResponse {
-                StatusCode = 405,
-                Body = $"Method \"{method}\" Not Allowed",
-                Headers = new Dictionary<string, string> {
+            case "GET":
+                return await get(request, context);
+            case "POST":
+                return await post(request, context);
+            default:
+                return new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 405,
+                    Body = $"Method \"{method}\" Not Allowed",
+                    Headers = new Dictionary<string, string> {
                     { "Content-Type", "text/plain" },
                     { "Allow", "GET, POST" }
                 }
-            };
+                };
         }
     }
 
@@ -71,7 +72,8 @@ public class Function
         var entityGetDtos = entities.Select((e, i) => new UserGetDto(e));
         var entitiesJson = JsonSerializer.Serialize(entityGetDtos);
 
-        return new APIGatewayHttpApiV2ProxyResponse {
+        return new APIGatewayHttpApiV2ProxyResponse
+        {
             StatusCode = 200,
             Body = entitiesJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
@@ -93,7 +95,8 @@ public class Function
         }
         catch (JsonException e)
         {
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 400,
                 Body = $"Request body contains invalid JSON data. ${e.Message}",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
@@ -101,7 +104,8 @@ public class Function
         }
         catch (ArgumentNullException)
         {
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 400,
                 Body = $"Request body must contain JSON data of the entity to insert.",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
@@ -110,7 +114,8 @@ public class Function
         catch (Exception e)
         {
             context.Logger.LogError($"Unknown exception occured: {e.Message}");
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 500,
                 Body = "Internal Server Error",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
@@ -118,7 +123,8 @@ public class Function
         }
         if (dto == null)
         {
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 400,
                 Body = "Failed to deserialize request body.",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
@@ -167,7 +173,8 @@ public class Function
         var insertedGetDto = new UserGetDto(inserted.Entity);
         var insertedJson = JsonSerializer.Serialize(insertedGetDto);
 
-        return new APIGatewayHttpApiV2ProxyResponse {
+        return new APIGatewayHttpApiV2ProxyResponse
+        {
             StatusCode = 200,
             Body = insertedJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }

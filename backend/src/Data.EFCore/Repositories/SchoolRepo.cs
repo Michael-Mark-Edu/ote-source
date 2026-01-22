@@ -7,7 +7,8 @@ namespace OTE.Data.EFCore.Repositories;
 /// <param name="context">The `OteContext` the repository uses.</param>
 public class SchoolRepo(OteContext context) : AbstractRepo<SchoolEntity>(context)
 {
-    protected override IQueryable<SchoolEntity> _queryable {
+    protected override IQueryable<SchoolEntity> _queryable
+    {
         get
         {
             return _dbSet

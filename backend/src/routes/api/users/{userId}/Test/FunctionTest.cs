@@ -16,7 +16,7 @@ public class FunctionTest
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string>{{ "userId", "1" }};
+        request.PathParameters = new Dictionary<string, string> { { "userId", "1" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "GET";

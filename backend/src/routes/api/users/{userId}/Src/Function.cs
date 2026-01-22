@@ -34,7 +34,8 @@ public class Function
         }
         catch (ArgumentNullException)
         {
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 400,
                 Body = $"Expected 32-bit signed integer at end of url, instead got null.",
                 Headers = new Dictionary<string, string> {
@@ -44,7 +45,8 @@ public class Function
         }
         catch (FormatException)
         {
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 400,
                 Body = $"Expected 32-bit signed integer at end of url, instead got '{userId}'.",
                 Headers = new Dictionary<string, string> {
@@ -54,7 +56,8 @@ public class Function
         }
         catch (OverflowException)
         {
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 400,
                 Body = $"'{userId}' is out-of-range for a 32-bit signed integer.",
                 Headers = new Dictionary<string, string> {
@@ -67,17 +70,18 @@ public class Function
 
         switch (method)
         {
-        case "GET":
-            return await get(request, context, parsedId);
-        default:
-            return new APIGatewayHttpApiV2ProxyResponse {
-                StatusCode = 405,
-                Body = $"Method \"{method}\" Not Allowed",
-                Headers = new Dictionary<string, string> {
+            case "GET":
+                return await get(request, context, parsedId);
+            default:
+                return new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 405,
+                    Body = $"Method \"{method}\" Not Allowed",
+                    Headers = new Dictionary<string, string> {
                     { "Content-Type", "text/plain" },
                     { "Allow", "GET" }
                 }
-            };
+                };
         }
     }
 
@@ -103,7 +107,8 @@ public class Function
         var entity = entityResult.Unwrap();
 
         if (entity == null)
-            return new APIGatewayHttpApiV2ProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
                 StatusCode = 404,
                 Body = $"User with userId '{userId}' does not exist.",
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
@@ -112,7 +117,8 @@ public class Function
         var entityGetDto = new UserGetDto(entity);
         var entityJson = JsonSerializer.Serialize(entityGetDto);
 
-        return new APIGatewayHttpApiV2ProxyResponse {
+        return new APIGatewayHttpApiV2ProxyResponse
+        {
             StatusCode = 200,
             Body = entityJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }

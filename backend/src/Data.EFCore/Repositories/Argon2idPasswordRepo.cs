@@ -7,7 +7,8 @@ namespace OTE.Data.EFCore.Repositories;
 /// <param name="context">The `OteContext` the repository uses.</param>
 public class Argon2idPasswordRepo(OteContext context) : AbstractRepo<Argon2idPasswordEntity>(context)
 {
-    protected override IQueryable<Argon2idPasswordEntity> _queryable {
+    protected override IQueryable<Argon2idPasswordEntity> _queryable
+    {
         get
         {
             return _dbSet

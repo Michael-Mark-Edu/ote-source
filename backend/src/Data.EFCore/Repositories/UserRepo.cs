@@ -9,7 +9,8 @@ namespace OTE.Data.EFCore.Repositories;
 /// <param name="logger">The `ILambdaLogger` used for logging.</param>
 public class UserRepo(OteContext context) : AbstractRepo<UserEntity>(context)
 {
-    protected override IQueryable<UserEntity> _queryable {
+    protected override IQueryable<UserEntity> _queryable
+    {
         get
         {
             return _dbSet

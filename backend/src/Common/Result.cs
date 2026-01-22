@@ -10,7 +10,7 @@ public sealed class Result<TValue, TError>
     /// <summary>Exception thrown when calling `Unwrap()` on an error-state `Result`.</summary>
     public class BadUnwrapException : Exception
     {
-        public BadUnwrapException() : base() {}
+        public BadUnwrapException() : base() { }
     }
 
     /// <summary>The `TValue` of the `Result` as a nullable type.</summary>

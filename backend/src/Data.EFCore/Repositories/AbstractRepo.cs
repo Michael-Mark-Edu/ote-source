@@ -16,7 +16,8 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
 {
     protected DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
-    protected virtual IQueryable<TEntity> _queryable {
+    protected virtual IQueryable<TEntity> _queryable
+    {
         get
         {
             return _dbSet.AsQueryable();
@@ -36,7 +37,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
             for (Exception? i = e; i != null; i = i.InnerException)
             {
                 if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
-                    return new ((NpgsqlException)i);
+                    return new((NpgsqlException)i);
             }
             throw;
         }
@@ -53,7 +54,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
             for (Exception? i = e; i != null; i = i.InnerException)
             {
                 if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
-                    return new ((NpgsqlException)i);
+                    return new((NpgsqlException)i);
             }
             throw;
         }
@@ -75,7 +76,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
             for (Exception? i = e; i != null; i = i.InnerException)
             {
                 if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
-                    return new ((NpgsqlException)i);
+                    return new((NpgsqlException)i);
             }
             throw;
         }
@@ -112,7 +113,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
             for (Exception? i = e; i != null; i = i.InnerException)
             {
                 if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
-                    return new ((NpgsqlException)i);
+                    return new((NpgsqlException)i);
             }
             throw;
         }
@@ -138,7 +139,7 @@ public abstract class AbstractRepo<TEntity>(OteContext context)
             for (Exception? i = e; i != null; i = i.InnerException)
             {
                 if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
-                    return new ((NpgsqlException)i);
+                    return new((NpgsqlException)i);
             }
             throw;
         }
