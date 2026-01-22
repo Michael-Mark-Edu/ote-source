@@ -72,15 +72,17 @@ public class Function
         {
             case "GET":
                 return await get(request, context, parsedId);
+            case "DELETE":
+                return await delete(request, context, parsedId);
             default:
                 return new APIGatewayHttpApiV2ProxyResponse
                 {
                     StatusCode = 405,
                     Body = $"Method \"{method}\" Not Allowed",
                     Headers = new Dictionary<string, string> {
-                    { "Content-Type", "text/plain" },
-                    { "Allow", "GET" }
-                }
+                        { "Content-Type", "text/plain" },
+                        { "Allow", "GET, DELETE" }
+                    }
                 };
         }
     }
@@ -122,6 +124,41 @@ public class Function
             StatusCode = 200,
             Body = entityJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        };
+    }
+
+    private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
+    {
+        var entityResult = await _userRepo.Delete(userId);
+        if (!entityResult.Ok)
+        {
+            var error = entityResult.UnwrapError();
+            var errorData = DatabaseErrorHandler.Parse(error);
+
+            if (errorData.LogMessage != null)
+                context.Logger.LogError($"UserRepo.Delete() error: {errorData.LogMessage}");
+
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = errorData.HttpStatus,
+                Body = errorData.BodyMessage,
+                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+            };
+        }
+
+        var entity = entityResult.Unwrap();
+
+        if (entity == null)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 404,
+                Body = $"User with userId '{userId}' does not exist.",
+                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+            };
+
+        return new APIGatewayHttpApiV2ProxyResponse
+        {
+            StatusCode = 204
         };
     }
 }
