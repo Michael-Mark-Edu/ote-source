@@ -36,9 +36,9 @@ public class Function
                 return new APIGatewayHttpApiV2ProxyResponse
                 {
                     StatusCode = 405,
-                    Body = $"Method \"{method}\" not allowed.",
+                    Body = $"{{\"error\":\"Method '{method}' not allowed.\"}}",
                     Headers = new Dictionary<string, string> {
-                        { "Content-Type", "text/plain" },
+                        { "Content-Type", "application/json" },
                         { "Allow", "GET, POST" }
                     }
                 };

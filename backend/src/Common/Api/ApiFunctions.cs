@@ -17,8 +17,8 @@ public static class ApiFunctions
         return new APIGatewayHttpApiV2ProxyResponse
         {
             StatusCode = errorData.HttpStatus,
-            Body = errorData.BodyMessage,
-            Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+            Body = $"{{\"error\":{errorData.BodyMessage}}}",
+            Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }
 
@@ -40,8 +40,8 @@ public static class ApiFunctions
             return Result<TTarget, APIGatewayHttpApiV2ProxyResponse>.NewError(new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = $"Request body contains invalid JSON data. ${e.Message}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Body = $"{{\"error\":\"Request body contains invalid JSON data. ${e.Message}\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             });
         }
         catch (ArgumentNullException)
@@ -49,8 +49,8 @@ public static class ApiFunctions
             return Result<TTarget, APIGatewayHttpApiV2ProxyResponse>.NewError(new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = $"Request body must contain JSON data of the entity to insert.",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Body = $"{{\"error\":\"Request body must contain JSON data of the entity to insert.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             });
         }
         catch (Exception e)
@@ -59,8 +59,8 @@ public static class ApiFunctions
             return Result<TTarget, APIGatewayHttpApiV2ProxyResponse>.NewError(new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 500,
-                Body = "Internal Server Error",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Body = $"{{\"error\":\"Internal server error.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             });
         }
         if (target == null)
@@ -68,8 +68,8 @@ public static class ApiFunctions
             return Result<TTarget, APIGatewayHttpApiV2ProxyResponse>.NewError(new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = "Failed to deserialize request body.",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Body = $"{{\"error\":\"Failed to deserialize request body.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             });
         }
 

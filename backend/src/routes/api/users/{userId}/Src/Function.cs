@@ -31,9 +31,9 @@ public class Function
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = parsedIdResult.UnwrapError().BodyMessage,
+                Body = $"{{\"error\":\"{parsedIdResult.UnwrapError().BodyMessage}\"}}",
                 Headers = new Dictionary<string, string> {
-                    { "Content-Type", "text/plain" },
+                    { "Content-Type", "application/json" },
                 }
             };
 
@@ -50,9 +50,9 @@ public class Function
                 return new APIGatewayHttpApiV2ProxyResponse
                 {
                     StatusCode = 405,
-                    Body = $"Method \"{method}\" Not Allowed",
+                    Body = $"{{\"error\":\"Method '{method}' not allowed.\"}}",
                     Headers = new Dictionary<string, string> {
-                        { "Content-Type", "text/plain" },
+                        { "Content-Type", "application/json" },
                         { "Allow", "GET, DELETE" }
                     }
                 };
@@ -73,8 +73,8 @@ public class Function
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
-                Body = $"User with userId '{userId}' does not exist.",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Body = $"{{\"error\":\"User with userId '{userId}' does not exist.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
 
         var userGetDto = new UserGetDto(foundUser);
@@ -102,8 +102,8 @@ public class Function
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
-                Body = $"User with userId '{userId}' does not exist.",
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Body = $"{{\"error\":\"User with userId '{userId}' does not exist.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
 
         return new APIGatewayHttpApiV2ProxyResponse
