@@ -4,15 +4,15 @@ using OTE.Data.EFCore.Entities;
 
 namespace OTE.Data.EFCore.Dtos;
 
-/// <summary>Result type for `UserPostDto`.</summary>
-public class UserPostDtoResult
+/// <summary>Output type for `UserPostDto`.</summary>
+public class UserPostDtoOutput
 {
     public required UserEntity UserEntity { get; set; }
     public required Argon2idPasswordEntity Argon2idPasswordEntity { get; set; }
 }
 
 /// <summary>`IPostDto` for inserting user/password pairs from a POST request.</summary>
-public class UserPostDto : IPostDto<UserPostDtoResult>
+public class UserPostDto : IPostDto<UserPostDtoOutput>
 {
     [MaxLength(255)]
     [JsonPropertyName("username")]
@@ -40,7 +40,7 @@ public class UserPostDto : IPostDto<UserPostDtoResult>
     [JsonPropertyName("schoolId")]
     public int SchoolId { get; set; }
 
-    public UserPostDtoResult Map()
+    public UserPostDtoOutput Map()
     {
         var argon2idPasswordEntity = new Argon2idPasswordEntity
         {
@@ -71,7 +71,7 @@ public class UserPostDto : IPostDto<UserPostDtoResult>
             Argon2idPasswordId = 0
         };
 
-        return new UserPostDtoResult
+        return new UserPostDtoOutput
         {
             UserEntity = userEntity,
             Argon2idPasswordEntity = argon2idPasswordEntity

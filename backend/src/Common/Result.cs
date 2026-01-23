@@ -4,8 +4,6 @@ namespace OTE.Common;
 /// <typeparam name="TValue">The value type of the `Result`.</typeparam>
 /// <typeparam name="TError">The error type of the `Result`.</typeparam>
 public sealed class Result<TValue, TError>
-    where TValue : class?
-    where TError : class?
 {
     /// <summary>Exception thrown when calling `Unwrap()` on an error-state `Result`.</summary>
     public class BadUnwrapException : Exception
@@ -13,11 +11,8 @@ public sealed class Result<TValue, TError>
         public BadUnwrapException() : base() { }
     }
 
-    /// <summary>The `TValue` of the `Result` as a nullable type.</summary>
-    public TValue? Value { get; private set; }
-
-    /// <summary>The `TError` of the `Result` as a nullable type.</summary>
-    public TError? Error { get; private set; }
+    private TValue? _value;
+    private TError? _error;
 
     /// <summary>Flag that determines if the `Result` is in an ok or error state.</summary>
     public bool Ok { get; private set; }
@@ -26,18 +21,28 @@ public sealed class Result<TValue, TError>
     /// <param name="value">The value to store in the `Result`.</param>
     public Result(TValue value)
     {
-        Value = value;
-        Error = null;
+        _value = value;
+        _error = default;
         Ok = true;
+    }
+
+    public static Result<TValue, TError> NewOk(TValue value)
+    {
+        return new Result<TValue, TError>(value);
     }
 
     /// <summary>Returns a `Result` type in an error state.</summary>
     /// <param name="error">The error to store in the `Result`.</param>
     public Result(TError error)
     {
-        Value = null;
-        Error = error;
+        _value = default;
+        _error = error;
         Ok = false;
+    }
+
+    public static Result<TValue, TError> NewError(TError error)
+    {
+        return new Result<TValue, TError>(error);
     }
 
     /// <summary>Force-get the value of the `Result`.</summary>
@@ -48,7 +53,7 @@ public sealed class Result<TValue, TError>
         if (!Ok)
             throw new BadUnwrapException();
 
-        return Value!;
+        return _value!;
     }
 
     /// <summary>Force-get the error of the `Result`.</summary>
@@ -59,7 +64,7 @@ public sealed class Result<TValue, TError>
         if (Ok)
             throw new BadUnwrapException();
 
-        return Error!;
+        return _error!;
     }
 
     /// <summary>
@@ -77,17 +82,17 @@ public sealed class Result<TValue, TError>
         where TNewValue : class
     {
         if (Ok)
-            return func(Value!);
+            return func(_value!);
         else
-            return new Result<TNewValue, TError>(Error!);
+            return new Result<TNewValue, TError>(_error!);
     }
 
     /// <summary>Sets the `Result` to be ok and have a new value.</summary>
     /// <param name="value">The new value for the `Result` to store.</param>
     public void SetOk(TValue value)
     {
-        Value = value;
-        Error = null;
+        _value = value;
+        _error = default;
         Ok = true;
     }
 
@@ -95,8 +100,8 @@ public sealed class Result<TValue, TError>
     /// <param name="value">The new error for the `Result` to store.</param>
     public void SetError(TError error)
     {
-        Value = null;
-        Error = error;
+        _value = default;
+        _error = error;
         Ok = false;
     }
 }

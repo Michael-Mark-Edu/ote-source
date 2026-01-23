@@ -3,6 +3,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Annotations;
 using System.Text.Json;
 using OTE.Common;
+using OTE.Common.Api;
 using OTE.Data.EFCore.Contexts;
 using OTE.Data.EFCore.Dtos;
 using OTE.Data.EFCore.Factories;
@@ -17,57 +18,28 @@ public class Function
 {
     private OteContextFactory _factory = null!;
     private OteContext _dbContext = null!;
-    private UserRepo _userRepo = null!;
 
     [LambdaFunction]
     public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
         _factory = new OteContextFactory();
         _dbContext = _factory.CreateDbContext();
-        _userRepo = new UserRepo(_dbContext);
 
         string userId = request.PathParameters["userId"];
-        int parsedId;
-        try
-        {
-            parsedId = int.Parse(userId);
-        }
-        catch (ArgumentNullException)
-        {
+        var parsedIdResult = SafeAtoi.Parse(userId);
+        if (!parsedIdResult.Ok)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = $"Expected 32-bit signed integer at end of url, instead got null.",
+                Body = parsedIdResult.UnwrapError().BodyMessage,
                 Headers = new Dictionary<string, string> {
                     { "Content-Type", "text/plain" },
                 }
             };
-        }
-        catch (FormatException)
-        {
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"Expected 32-bit signed integer at end of url, instead got '{userId}'.",
-                Headers = new Dictionary<string, string> {
-                    { "Content-Type", "text/plain" },
-                }
-            };
-        }
-        catch (OverflowException)
-        {
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"'{userId}' is out-of-range for a 32-bit signed integer.",
-                Headers = new Dictionary<string, string> {
-                    { "Content-Type", "text/plain" },
-                }
-            };
-        }
+
+        int parsedId = parsedIdResult.Unwrap();
 
         string method = request.RequestContext.Http.Method;
-
         switch (method)
         {
             case "GET":
@@ -89,26 +61,15 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var entityResult = await _userRepo.FindById(userId);
-        if (!entityResult.Ok)
-        {
-            var error = entityResult.UnwrapError();
-            var errorData = DatabaseErrorHandler.Parse(error);
+        var userRepo = new UserRepo(_dbContext);
 
-            if (errorData.LogMessage != null)
-                context.Logger.LogError($"UserRepo.FindById() error: {errorData.LogMessage}");
+        var findUserResult = await userRepo.FindById(userId);
+        if (!findUserResult.Ok)
+            return ApiFunctions.HandleRepoError(findUserResult.UnwrapError(), context.Logger);
 
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = errorData.HttpStatus,
-                Body = errorData.BodyMessage,
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
-            };
-        }
+        var foundUser = findUserResult.Unwrap();
 
-        var entity = entityResult.Unwrap();
-
-        if (entity == null)
+        if (foundUser == null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
@@ -116,35 +77,24 @@ public class Function
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
             };
 
-        var entityGetDto = new UserGetDto(entity);
-        var entityJson = JsonSerializer.Serialize(entityGetDto);
+        var userGetDto = new UserGetDto(foundUser);
+        var userGetDtoJson = JsonSerializer.Serialize(userGetDto);
 
         return new APIGatewayHttpApiV2ProxyResponse
         {
             StatusCode = 200,
-            Body = entityJson,
+            Body = userGetDtoJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var entityResult = await _userRepo.Delete(userId);
+        var userRepo = new UserRepo(_dbContext);
+
+        var entityResult = await userRepo.Delete(userId);
         if (!entityResult.Ok)
-        {
-            var error = entityResult.UnwrapError();
-            var errorData = DatabaseErrorHandler.Parse(error);
-
-            if (errorData.LogMessage != null)
-                context.Logger.LogError($"UserRepo.Delete() error: {errorData.LogMessage}");
-
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = errorData.HttpStatus,
-                Body = errorData.BodyMessage,
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
-            };
-        }
+            return ApiFunctions.HandleRepoError(entityResult.UnwrapError(), context.Logger);
 
         var entity = entityResult.Unwrap();
 
