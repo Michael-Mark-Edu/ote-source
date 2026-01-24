@@ -71,7 +71,7 @@ public class Function
 
         var foundUser = findUserResult.Unwrap();
 
-        if (foundUser == null)
+        if (foundUser == null || foundUser.DeletedAt != null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
@@ -107,7 +107,7 @@ public class Function
 
         var foundUser = findUserResult.Unwrap();
 
-        if (foundUser == null)
+        if (foundUser == null || foundUser.DeletedAt != null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
@@ -219,13 +219,28 @@ public class Function
     {
         var userRepo = new UserRepo(_dbContext);
 
-        var entityResult = await userRepo.Delete(userId);
-        if (!entityResult.Ok)
-            return ApiFunctions.HandleRepoError(entityResult.UnwrapError(), context.Logger);
+        var findUserResult = await userRepo.FindById(userId);
+        if (!findUserResult.Ok)
+            return ApiFunctions.HandleRepoError(findUserResult.UnwrapError(), context.Logger);
 
-        var entity = entityResult.Unwrap();
+        var foundUser = findUserResult.Unwrap();
+        if (foundUser == null || foundUser.DeletedAt != null)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 404,
+                Body = $"{{\"error\":\"User with userId '{userId}' does not exist.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
 
-        if (entity == null)
+        foundUser.DeletedAt = DateTime.UtcNow;
+        // foundUser.Argon2idPassword.DeletedAt = DateTime.UtcNow;
+
+        var updateUserResult = await userRepo.Update(userId, foundUser);
+        if (!updateUserResult.Ok)
+            return ApiFunctions.HandleRepoError(updateUserResult.UnwrapError(), context.Logger);
+
+        var updatedUser = updateUserResult.Unwrap();
+        if (updatedUser == null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
