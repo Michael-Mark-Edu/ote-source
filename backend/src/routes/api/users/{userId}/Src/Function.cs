@@ -1,13 +1,14 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Annotations;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using OTE.Common;
 using OTE.Common.Api;
 using OTE.Data.EFCore.Contexts;
 using OTE.Data.EFCore.Dtos;
 using OTE.Data.EFCore.Factories;
-using OTE.Data.EFCore.Repositories;
+using System.Text.Json;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -63,15 +64,13 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var userRepo = new UserRepo(_dbContext);
+        var foundUser = await _dbContext
+            .Users
+            .Where(e => e.UserId == userId)
+            .Where(e => e.DeletedAt == null)
+            .FirstOrDefaultAsync();
 
-        var findUserResult = await userRepo.FindById(userId);
-        if (!findUserResult.Ok)
-            return ApiFunctions.HandleRepoError(findUserResult.UnwrapError(), context.Logger);
-
-        var foundUser = findUserResult.Unwrap();
-
-        if (foundUser == null || foundUser.DeletedAt != null)
+        if (foundUser == null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
@@ -92,8 +91,11 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> patch(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var userRepo = new UserRepo(_dbContext);
-        var passwordRepo = new Argon2idPasswordRepo(_dbContext);
+        var foundUserAsync = _dbContext
+            .Users
+            .Where(e => e.UserId == userId)
+            .Where(e => e.DeletedAt == null)
+            .FirstOrDefaultAsync();
 
         var deserializeResult = ApiFunctions.DeserializeJson<Dictionary<string, JsonElement>>(request, context.Logger);
         if (!deserializeResult.Ok)
@@ -101,13 +103,9 @@ public class Function
 
         var dsz = deserializeResult.Unwrap();
 
-        var findUserResult = await userRepo.FindById(userId);
-        if (!findUserResult.Ok)
-            return ApiFunctions.HandleRepoError(findUserResult.UnwrapError(), context.Logger);
+        var foundUser = await foundUserAsync;
 
-        var foundUser = findUserResult.Unwrap();
-
-        if (foundUser == null || foundUser.DeletedAt != null)
+        if (foundUser == null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
@@ -187,20 +185,25 @@ public class Function
         else if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number)
             foundUser.SchoolId = schoolId;
 
-        var updateResult = await userRepo.Update(userId, foundUser);
-        if (!updateResult.Ok)
-            return ApiFunctions.HandleRepoError(updateResult.UnwrapError(), context.Logger);
+        var updatedUserEntry = _dbContext
+            .Users
+            .Update(foundUser);
 
-        var updatedUserEntry = updateResult.Unwrap();
-        if (updatedUserEntry == null)
+        try
         {
-            context.Logger.LogError("userRepo.Update returned null unexpectedly.");
-            return new APIGatewayHttpApiV2ProxyResponse
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            for (Exception? i = e; i != null; i = i.InnerException)
             {
-                StatusCode = 500,
-                Body = $"{{\"error\":\"Internal server error.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
+                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
+                {
+                    var n = (NpgsqlException)i;
+                    return ApiFunctions.HandleRepoError(n, context.Logger);
+                }
+            }
+            throw;
         }
 
         var updatedUser = updatedUserEntry.Entity;
@@ -217,14 +220,13 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var userRepo = new UserRepo(_dbContext);
+        var foundUser = await _dbContext
+            .Users
+            .Where(e => e.UserId == userId)
+            .Where(e => e.DeletedAt == null)
+            .FirstOrDefaultAsync();
 
-        var findUserResult = await userRepo.FindById(userId);
-        if (!findUserResult.Ok)
-            return ApiFunctions.HandleRepoError(findUserResult.UnwrapError(), context.Logger);
-
-        var foundUser = findUserResult.Unwrap();
-        if (foundUser == null || foundUser.DeletedAt != null)
+        if (foundUser == null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
@@ -233,20 +235,27 @@ public class Function
             };
 
         foundUser.DeletedAt = DateTime.UtcNow;
-        // foundUser.Argon2idPassword.DeletedAt = DateTime.UtcNow;
 
-        var updateUserResult = await userRepo.Update(userId, foundUser);
-        if (!updateUserResult.Ok)
-            return ApiFunctions.HandleRepoError(updateUserResult.UnwrapError(), context.Logger);
+        var updatedUserEntry = _dbContext
+            .Users
+            .Update(foundUser);
 
-        var updatedUser = updateUserResult.Unwrap();
-        if (updatedUser == null)
-            return new APIGatewayHttpApiV2ProxyResponse
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            for (Exception? i = e; i != null; i = i.InnerException)
             {
-                StatusCode = 404,
-                Body = $"{{\"error\":\"User with userId '{userId}' does not exist.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
+                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
+                {
+                    var n = (NpgsqlException)i;
+                    return ApiFunctions.HandleRepoError(n, context.Logger);
+                }
+            }
+            throw;
+        }
 
         return new APIGatewayHttpApiV2ProxyResponse
         {
