@@ -43,12 +43,50 @@ public class FunctionTest
     }
 
     [Fact]
-    public async Task DeleteTest()
+    public async Task PatchTest()
     {
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
         request.PathParameters = new Dictionary<string, string> { { "userId", "2" } };
+        request.RequestContext = new();
+        request.RequestContext.Http = new();
+        request.RequestContext.Http.Method = "PATCH";
+
+        request.IsBase64Encoded = false;
+        request.Body = "{\"firstName\":\"John\",\"lastName\":\"Doe\"}";
+
+        var response = await function.FunctionHandler(request, context);
+        Assert.NotNull(response);
+
+        if (response.StatusCode != 200)
+        {
+            Console.WriteLine(response.Body);
+            Assert.Equal(200, response.StatusCode);
+        }
+
+        try
+        {
+            var entities = JsonSerializer.Deserialize<UserGetDto>(response.Body);
+            Assert.NotNull(entities);
+            Assert.Equal("John", entities.FirstName);
+            Assert.Equal("Doe", entities.LastName);
+
+            Console.WriteLine(response.Body);
+        }
+        catch (Exception e)
+        {
+            Assert.Fail(e.Message);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteTest()
+    {
+        var function = new Function();
+        var context = new TestLambdaContext();
+        var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.PathParameters = new Dictionary<string, string> { { "userId", "3" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
