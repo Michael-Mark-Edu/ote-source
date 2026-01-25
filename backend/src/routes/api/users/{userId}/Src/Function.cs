@@ -7,7 +7,6 @@ using OTE.Common;
 using OTE.Common.Api;
 using OTE.Data.EFCore.Contexts;
 using OTE.Data.EFCore.Dtos;
-using OTE.Data.EFCore.Factories;
 using System.Text.Json;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -17,15 +16,9 @@ namespace OTE.Routes.Api.Users.UserId;
 
 public class Function
 {
-    private OteContextFactory _factory = null!;
-    private OteContext _dbContext = null!;
-
     [LambdaFunction]
     public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        _factory = new OteContextFactory();
-        _dbContext = _factory.CreateDbContext();
-
         string userId = request.PathParameters["userId"];
         var parsedIdResult = SafeAtoi.Parse(userId);
         if (!parsedIdResult.Ok)
@@ -64,7 +57,9 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var foundUser = await _dbContext
+        var oteContext = OteContextSingleton.GetOrCreate();
+
+        var foundUser = await oteContext
             .Users
             .Where(e => e.UserId == userId)
             .Where(e => e.DeletedAt == null)
@@ -91,7 +86,9 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> patch(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var foundUserAsync = _dbContext
+        var oteContext = OteContextSingleton.GetOrCreate();
+
+        var foundUserAsync = oteContext
             .Users
             .Where(e => e.UserId == userId)
             .Where(e => e.DeletedAt == null)
@@ -185,13 +182,13 @@ public class Function
         else if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number)
             foundUser.SchoolId = schoolId;
 
-        var updatedUserEntry = _dbContext
+        var updatedUserEntry = oteContext
             .Users
             .Update(foundUser);
 
         try
         {
-            await _dbContext.SaveChangesAsync();
+            await oteContext.SaveChangesAsync();
         }
         catch (Exception e)
         {
@@ -220,7 +217,9 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var foundUser = await _dbContext
+        var oteContext = OteContextSingleton.GetOrCreate();
+
+        var foundUser = await oteContext
             .Users
             .Where(e => e.UserId == userId)
             .Where(e => e.DeletedAt == null)
@@ -236,13 +235,13 @@ public class Function
 
         foundUser.DeletedAt = DateTime.UtcNow;
 
-        var updatedUserEntry = _dbContext
+        var updatedUserEntry = oteContext
             .Users
             .Update(foundUser);
 
         try
         {
-            await _dbContext.SaveChangesAsync();
+            await oteContext.SaveChangesAsync();
         }
         catch (Exception e)
         {
