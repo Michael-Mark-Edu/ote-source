@@ -34,6 +34,7 @@ jobs:
       continue-on-error: true
       run: |
         sudo systemctl start postgresql.service
+        psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
     - name: Wait for DB
       run: |
@@ -51,7 +52,7 @@ jobs:
         dotnet ef database update
 
     - name: Populate DB
-      run: sudo -u postgres psql -h localhost -p 5432 -d ote -f database/scripts/populate.sql
+      run: PGPASSWORD=postgres psql -U postgres -h localhost -p 5432 -d ote -f database/scripts/populate.sql
 
     - name: Run tests
       run: |
