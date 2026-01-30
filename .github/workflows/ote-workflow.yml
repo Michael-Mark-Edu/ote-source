@@ -32,7 +32,9 @@ jobs:
 
     - name: Start PostgreSQL
       continue-on-error: true
-      run: sudo systemctl start postgresql.service
+      run: |
+        sudo systemctl start postgresql.service
+        sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
     - name: Wait for DB
       run: |
