@@ -42,19 +42,7 @@ public class UserPostDto : IPostDto<UserPostDtoOutput>
 
     public UserPostDtoOutput Map()
     {
-        var argon2idPasswordEntity = new Argon2idPasswordEntity
-        {
-            // TODO: Implement Argon2id
-            Argon2idPasswordId = 0,
-            Version = 0,
-            MemoryCost = 0,
-            Iterations = 0,
-            Parallelism = 0,
-            Salt = [],
-            Hash = [],
-            CreatedAt = DateTime.UtcNow,
-            DeletedAt = null
-        };
+        var argon2idPasswordEntity = new Argon2idPasswordEntity(Password);
 
         var userEntity = new UserEntity
         {
@@ -67,9 +55,9 @@ public class UserPostDto : IPostDto<UserPostDtoOutput>
             LastName = LastName,
             MiddleName = MiddleName,
             SchoolId = SchoolId,
-            Argon2idPassword = argon2idPasswordEntity,
-            Argon2idPasswordId = 0
         };
+
+        argon2idPasswordEntity.User = userEntity;
 
         return new UserPostDtoOutput
         {

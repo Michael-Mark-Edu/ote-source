@@ -45,11 +45,4 @@ public class UserEntity
 
     [JsonPropertyName("schoolId")]
     public int SchoolId { get; set; }
-
-    [JsonIgnore]
-    [ForeignKey("Argon2idPasswordId")]
-    public Argon2idPasswordEntity Argon2idPassword { get; set; } = null!;
-
-    [JsonPropertyName("argon2idPasswordId")]
-    public int Argon2idPasswordId { get; set; }
 }
