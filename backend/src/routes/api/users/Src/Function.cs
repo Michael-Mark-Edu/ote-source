@@ -18,7 +18,22 @@ public class Function
     [LambdaFunction]
     public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        string method = request.RequestContext.Http.Method;
+        string method;
+        try
+        {
+            method = request.RequestContext.Http.Method;
+        }
+        catch (NullReferenceException)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Request is not a valid AWS API Gateway HTTP API V2 request.\"}}",
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "application/json" }
+                }
+            };
+        }
 
         switch (method)
         {
@@ -41,7 +56,7 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        var oteContext = OteContextSingleton.GetOrCreate();
+        using var oteContext = new OteContext();
 
         var users = await oteContext
             .Users
@@ -61,24 +76,21 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> post(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        var oteContext = OteContextSingleton.GetOrCreate();
+        using var oteContext = new OteContext();
 
-        var deserializeResult = ApiFunctions.DeserializeJson<UserPostDto>(request, context.Logger);
+        var deserializeResult = ApiFunctions.DeserializeJsonEntity<UserPostDto>(request, context.Logger);
         if (!deserializeResult.Ok)
             return deserializeResult.UnwrapError();
 
         var userPostDtoOutput = deserializeResult.Unwrap().Map();
 
-        var insertPasswordAsync = oteContext
+        await oteContext
             .Argon2idPasswords
             .AddAsync(userPostDtoOutput.Argon2idPasswordEntity);
 
-        var insertUserAsync = oteContext
+        var insertedUserEntry = await oteContext
             .Users
             .AddAsync(userPostDtoOutput.UserEntity);
-
-        await insertPasswordAsync;
-        var insertedUserEntry = await insertUserAsync;
 
         try
         {

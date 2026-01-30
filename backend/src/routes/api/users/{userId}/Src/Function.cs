@@ -19,7 +19,22 @@ public class Function
     [LambdaFunction]
     public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        string userId = request.PathParameters["userId"];
+        string userId;
+        try
+        {
+            userId = request.PathParameters["userId"];
+        }
+        catch (NullReferenceException)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"userId expected but not given.\"}}",
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "application/json" }
+                }
+            };
+        }
         var parsedIdResult = SafeAtoi.Parse(userId);
         if (!parsedIdResult.Ok)
             return new APIGatewayHttpApiV2ProxyResponse
@@ -33,7 +48,23 @@ public class Function
 
         int parsedId = parsedIdResult.Unwrap();
 
-        string method = request.RequestContext.Http.Method;
+        string method;
+        try
+        {
+            method = request.RequestContext.Http.Method;
+        }
+        catch (NullReferenceException)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Request is not a valid AWS API Gateway HTTP API V2 request.\"}}",
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "application/json" }
+                }
+            };
+        }
+
         switch (method)
         {
             case "GET":
@@ -57,7 +88,7 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var oteContext = OteContextSingleton.GetOrCreate();
+        using var oteContext = new OteContext();
 
         var foundUser = await oteContext
             .Users
@@ -86,21 +117,19 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> patch(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var oteContext = OteContextSingleton.GetOrCreate();
+        using var oteContext = new OteContext();
 
-        var foundUserAsync = oteContext
+        var foundUser = await oteContext
             .Users
             .Where(e => e.UserId == userId)
             .Where(e => e.DeletedAt == null)
             .FirstOrDefaultAsync();
 
-        var deserializeResult = ApiFunctions.DeserializeJson<Dictionary<string, JsonElement>>(request, context.Logger);
+        var deserializeResult = ApiFunctions.DeserializeJsonDictionary(request, context.Logger);
         if (!deserializeResult.Ok)
             return deserializeResult.UnwrapError();
 
         var dsz = deserializeResult.Unwrap();
-
-        var foundUser = await foundUserAsync;
 
         if (foundUser == null)
             return new APIGatewayHttpApiV2ProxyResponse
@@ -161,15 +190,30 @@ public class Function
             };
 
         if (dsz.ContainsKey("username") && dsz["username"].ValueKind == JsonValueKind.String)
+        {
             foundUser.Username = dsz["username"]!.GetString()!;
+            dsz.Remove("username");
+        }
         if (dsz.ContainsKey("emailAddress") && dsz["emailAddress"].ValueKind == JsonValueKind.String)
+        {
             foundUser.EmailAddress = dsz["emailAddress"]!.GetString()!;
+            dsz.Remove("emailAddress");
+        }
         if (dsz.ContainsKey("firstName") && (dsz["firstName"].ValueKind == JsonValueKind.String || dsz["firstName"].ValueKind == JsonValueKind.Null))
+        {
             foundUser.FirstName = dsz["firstName"]!.GetString();
+            dsz.Remove("firstName");
+        }
         if (dsz.ContainsKey("lastName") && (dsz["lastName"].ValueKind == JsonValueKind.String || dsz["lastName"].ValueKind == JsonValueKind.Null))
+        {
             foundUser.LastName = dsz["lastName"]!.GetString();
+            dsz.Remove("lastName");
+        }
         if (dsz.ContainsKey("middleName") && (dsz["middleName"].ValueKind == JsonValueKind.String || dsz["middleName"].ValueKind == JsonValueKind.Null))
+        {
             foundUser.MiddleName = dsz["middleName"]!.GetString();
+            dsz.Remove("middleName");
+        }
 
         int schoolId = 0;
         if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number && !dsz["schoolId"].TryGetInt32(out schoolId))
@@ -180,7 +224,18 @@ public class Function
                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
         else if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number)
+        {
             foundUser.SchoolId = schoolId;
+            dsz.Remove("middleName");
+        }
+
+        if (dsz.Count > 0)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Request body contains {dsz.Count} extra JSON field{(dsz.Count == 1 ? "" : "s")}.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
 
         var updatedUserEntry = oteContext
             .Users
@@ -217,7 +272,7 @@ public class Function
 
     private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
     {
-        var oteContext = OteContextSingleton.GetOrCreate();
+        using var oteContext = new OteContext();
 
         var foundUser = await oteContext
             .Users

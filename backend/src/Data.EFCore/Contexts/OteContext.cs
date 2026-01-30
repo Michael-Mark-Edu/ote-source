@@ -6,7 +6,6 @@ using OTE.Data.EFCore.Entities;
 namespace OTE.Data.EFCore.Contexts;
 
 /// <summary>`DbContext` representing the OTE database schema.</summary>
-/// <param name="options">`DbContextOptions` object passed to the `DbContext` constructor.</param>
 public class OteContext : DbContext
 {
     public DbSet<Argon2idPasswordEntity> Argon2idPasswords { get; set; } = null!;
@@ -45,19 +44,5 @@ public class OteContext : DbContext
         }
 
         optionsBuilder.UseNpgsql(connectionString);
-    }
-}
-
-public static class OteContextSingleton
-{
-    private static OteContext? _context = null;
-
-    public static OteContext GetOrCreate()
-    {
-        if (_context != null)
-            return _context;
-
-        _context = new OteContext();
-        return _context;
     }
 }

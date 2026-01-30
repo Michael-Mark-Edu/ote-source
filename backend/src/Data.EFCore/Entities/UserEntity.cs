@@ -7,7 +7,6 @@ namespace OTE.Data.EFCore.Entities;
 
 /// <summary>Entity type for representing users.</summary>
 [Index(nameof(Username), IsUnique = true)]
-[Index(nameof(EmailAddress), IsUnique = true)]
 public class UserEntity
 {
     [Key]
