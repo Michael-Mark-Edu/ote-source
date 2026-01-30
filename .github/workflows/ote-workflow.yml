@@ -31,9 +31,8 @@ jobs:
         echo '{ "ConnectionStrings:OteDb": "Host=localhost; Port=5432; Database=ote; Username=postgres; Password=postgres; Include Error Detail=true" }' > ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e/secrets.json
 
     - name: Start PostgreSQL
-      run: |
-        sudo service postgresql start
-        sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+      continue-on-error: true
+      run: sudo systemctl start postgresql.service
 
     - name: Wait for DB
       run: |
@@ -51,7 +50,7 @@ jobs:
         dotnet ef database update
 
     - name: Populate DB
-      run: sudo -u postgres psql -d ote -f database/scripts/populate.sql
+      run: sudo -u postgres psql -h localhost -p 5432 -d ote -f database/scripts/populate.sql
 
     - name: Run tests
       run: |
