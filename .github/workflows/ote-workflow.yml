@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: postgres
+  POSTGRES_PASSWORD:
   POSTGRES_DB: ote
 
 jobs:
@@ -28,13 +28,12 @@ jobs:
     - name: Create secrets.json
       run: |
         mkdir -p ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e
-        echo '{ "ConnectionStrings:OteDb": "Host=localhost; Port=5432; Database=ote; Username=postgres; Password=postgres; Include Error Detail=true" }' > ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e/secrets.json
+        echo '{ "ConnectionStrings:OteDb": "Host=localhost; Port=5432; Database=ote; Username=postgres; Include Error Detail=true" }' > ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e/secrets.json
 
     - name: Start PostgreSQL
       continue-on-error: true
       run: |
         sudo systemctl start postgresql.service
-        sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 
     - name: Wait for DB
       run: |
