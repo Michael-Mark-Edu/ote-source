@@ -10,6 +10,7 @@ public class OteContext : DbContext
 {
     public DbSet<Argon2idPasswordEntity> Argon2idPasswords { get; set; } = null!;
     public DbSet<SchoolEntity> Schools { get; set; } = null!;
+    public DbSet<SessionTokenCacheEntity> SessionTokens { get; set; } = null!;
     public DbSet<UserEntity> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)

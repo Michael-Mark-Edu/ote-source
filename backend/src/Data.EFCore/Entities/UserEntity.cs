@@ -45,4 +45,7 @@ public class UserEntity
 
     [JsonPropertyName("schoolId")]
     public int SchoolId { get; set; }
+
+    [JsonPropertyName("isAdmin")]
+    public bool IsAdmin { get; set; }
 }
