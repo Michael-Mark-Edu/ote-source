@@ -2,6 +2,7 @@ using NSec.Cryptography;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace OTE.Data.EFCore.Entities;
@@ -45,9 +46,12 @@ public class Argon2idPasswordEntity
 
     public Argon2idPasswordEntity(string password)
     {
+        byte[] bytePassword = new byte[Encoding.UTF8.GetByteCount(password)];
+        Encoding.UTF8.GetBytes(password, bytePassword);
+
         Argon2idPasswordId = 0;
-        Version = 13;
-        MemoryCost = 4096;
+        Version = 19;
+        MemoryCost = 65536;
         Iterations = 3;
         Parallelism = 1;
 
@@ -61,6 +65,6 @@ public class Argon2idPasswordEntity
         parameters.NumberOfPasses = Iterations;
 
         var argon = PasswordBasedKeyDerivationAlgorithm.Argon2id(parameters);
-        Hash = argon.DeriveBytes(password, Salt, 16);
+        Hash = argon.DeriveBytes(bytePassword, Salt, 16);
     }
 }

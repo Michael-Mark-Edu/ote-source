@@ -1,6 +1,6 @@
-using NSec.Cryptography;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 
 namespace OTE.Data.EFCore.Entities;
@@ -30,6 +30,10 @@ public class SessionTokenCacheEntity
 
     public SessionTokenCacheEntity()
     {
+        Token = new byte[16];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(Token);
+
         ExpiresAt = CreatedAt.AddDays(7);
     }
 }
