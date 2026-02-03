@@ -7,6 +7,7 @@ using OTE.Common;
 using OTE.Common.Api;
 using OTE.Data.EFCore.Contexts;
 using OTE.Data.EFCore.Dtos;
+using System.Text;
 using System.Text.Json;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -119,6 +120,81 @@ public class Function
     {
         using var oteContext = new OteContext();
 
+        if (request.Cookies == null)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 401,
+                Body = $"{{\"error\":\"Cookies '__Host-Http-UserId' and '__Host-Http-SessionToken' must be specified.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+
+        var sessionTokenUserIdCookie = request
+            .Cookies
+            .Where(c => c.Length >= 19 && c.Substring(0, 19) == "__Host-Http-UserId=")
+            .FirstOrDefault();
+
+        if (sessionTokenUserIdCookie == null)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 401,
+                Body = $"{{\"error\":\"Cookie '__Host-Http-UserId' must be specified.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+
+        var sessionTokenUserId = sessionTokenUserIdCookie.Substring(19);
+
+        var sessionTokenUserIdParseResult = SafeAtoi.Parse(sessionTokenUserId);
+        if (!sessionTokenUserIdParseResult.Ok)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Could not parse '__Host-Http-UserId' into an integer.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+
+        var sessionTokenUserIdParse = sessionTokenUserIdParseResult.Unwrap();
+
+        var sessionTokenDataCookie = request
+            .Cookies
+            .Where(c => c.Length >= 25 && c.Substring(0, 25) == "__Host-Http-SessionToken=")
+            .FirstOrDefault();
+
+        if (sessionTokenDataCookie == null)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 401,
+                Body = $"{{\"error\":\"Cookie '__Host-Http-SessionToken' must be specified.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+
+        var sessionTokenData = sessionTokenDataCookie.Substring(25);
+
+        byte[] sessionTokenDataBytes = Convert.FromBase64String(sessionTokenData);
+
+        var dbSessionToken = await oteContext
+            .SessionTokens
+            .Include(e => e.User)
+            .Where(e => e.Token == sessionTokenDataBytes)
+            .SingleOrDefaultAsync();
+
+        if (dbSessionToken == null)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 403,
+                Body = $"{{\"error\":\"Insufficient priveleges.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+        }
+
+        if (dbSessionToken.UserId != userId && !dbSessionToken.User.IsAdmin)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 403,
+                Body = $"{{\"error\":\"Insufficient priveleges.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+
         var foundUser = await oteContext
             .Users
             .Where(e => e.UserId == userId)
@@ -167,7 +243,7 @@ public class Function
                 Body = $"{{\"error\":\"Expected 'lastName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["lastName"].ValueKind}.\"}}",
                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
-        if (dsz.ContainsKey("middleName") && (dsz["middleName"].ValueKind == JsonValueKind.String || dsz["middleName"].ValueKind == JsonValueKind.Null))
+        if (dsz.ContainsKey("middleName") && dsz["middleName"].ValueKind != JsonValueKind.String && dsz["middleName"].ValueKind != JsonValueKind.Null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,

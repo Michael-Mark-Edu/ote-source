@@ -18,6 +18,7 @@ public class PatchTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "PATCH";
+        request.Cookies = new string[] { "__Host-Http-UserId=6", "__Host-Http-SessionToken=AA==" };
 
         request.IsBase64Encoded = false;
         request.Body =
@@ -50,6 +51,7 @@ public class PatchTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "PATCH";
+        request.Cookies = new string[] { "__Host-Http-UserId=6", "__Host-Http-SessionToken=AA==" };
 
         request.IsBase64Encoded = false;
         request.Body =
@@ -77,6 +79,7 @@ public class PatchTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "PATCH";
+        request.Cookies = new string[] { "__Host-Http-UserId=6", "__Host-Http-SessionToken=AA==" };
 
         request.IsBase64Encoded = false;
         request.Body =
