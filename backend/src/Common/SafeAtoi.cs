@@ -1,30 +1,28 @@
 namespace OTE.Common;
 
-public class SafeAtoiError
-{
-    public string BodyMessage { get; set; }
-    public SafeAtoiError(string bodyMessage) => BodyMessage = bodyMessage;
-}
-
+/// <summary>Static class for performing a `Result`-encapsulated string-to-integer conversion.</summary>
 public static class SafeAtoi
 {
-    public static Result<int, SafeAtoiError> Parse(string str)
+    /// <summary>Turns a `string` into an `int`.</summary>
+    /// <param name="str">The `string` to parse.</param>
+    /// <returns>A result containing the parsed `int`, or an error string.</returns>
+    public static Result<int, string> Parse(string str)
     {
         try
         {
-            return Result<int, SafeAtoiError>.NewOk(int.Parse(str));
+            return Result<int, string>.NewOk(int.Parse(str));
         }
         catch (ArgumentNullException)
         {
-            return Result<int, SafeAtoiError>.NewError(new SafeAtoiError("Expected 32-bit signed integer at end of url, instead got null."));
+            return Result<int, string>.NewError("Expected 32-bit signed integer at end of url, instead got null.");
         }
         catch (FormatException)
         {
-            return Result<int, SafeAtoiError>.NewError(new SafeAtoiError($"Expected 32-bit signed integer at end of url, instead got {str}."));
+            return Result<int, string>.NewError($"Expected 32-bit signed integer at end of url, instead got {str}.");
         }
         catch (OverflowException)
         {
-            return Result<int, SafeAtoiError>.NewError(new SafeAtoiError($"{str} is too big/small and causes an overflow."));
+            return Result<int, string>.NewError($"{str} is too big/small and causes an overflow.");
         }
     }
 }

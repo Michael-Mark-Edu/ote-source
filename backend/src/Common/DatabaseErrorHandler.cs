@@ -2,6 +2,7 @@ using Npgsql;
 
 namespace OTE.Common;
 
+/// <summary>Struct containing HTTP response information.</summary>
 public class DatabaseErrorData
 {
     public int HttpStatus { get; set; } = 500;
@@ -9,8 +10,12 @@ public class DatabaseErrorData
     public string? LogMessage { get; set; } = "Unknown error occured";
 }
 
+/// <summary>Static class for getting HTTP error information from an `NpgsqlException`.</summary>
 public static class DatabaseErrorHandler
 {
+    /// <summary>Gets HTTP error information from an `NpgsqlException`.</summary>
+    /// <param name="ex">`NpgsqlException` to parse.</param>
+    /// <returns>A `DatabaseErrorData` instance containing relevant error information.</returns>
     public static DatabaseErrorData Parse(NpgsqlException ex)
     {
         switch (ex)

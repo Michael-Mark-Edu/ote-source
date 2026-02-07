@@ -41,7 +41,7 @@ public class Function
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = $"{{\"error\":\"{parsedIdResult.UnwrapError().BodyMessage}\"}}",
+                Body = $"{{\"error\":\"{parsedIdResult.UnwrapError()}\"}}",
                 Headers = new Dictionary<string, string> {
                     { "Content-Type", "application/json" },
                 }

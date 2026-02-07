@@ -7,8 +7,13 @@ using System.Text.Json.Serialization;
 
 namespace OTE.Common.Api;
 
+/// <summary>Static class for encapsulating repetitive and verbose code segments.</summary>
 public static class ApiFunctions
 {
+    /// <summary>Gets an HTTP response from an `NpgsqlException` while also handling logging.</summary>
+    /// <param name="error">The `NpgsqlException` to parse.</param>
+    /// <param name="logger">The `ILambdaLogger` instance used for logging.</param>
+    /// <returns>An `APIGatewayHttpApiV2ProxyResponse` ready to be sent to the user.</returns>
     public static APIGatewayHttpApiV2ProxyResponse HandleRepoError(NpgsqlException error, ILambdaLogger logger)
     {
         var errorData = DatabaseErrorHandler.Parse(error);
@@ -24,6 +29,11 @@ public static class ApiFunctions
         };
     }
 
+    /// <summary>Parses HTTP request body data into a generic object.</summary>
+    /// <param name="request">The `APIGatewayHttpApiV2ProxyRequest` to read the body of for parsing.</param>
+    /// <param name="logger">The `ILambdaLogger` instance used for logging.</param>
+    /// <typeparam name="TTarget">A constructable type that is created from JSON data.</typeparam>
+    /// <returns>A `Result` type containing either a new `TTarget` instance, or a `APIGatewayHttpApiV2ProxyResponse` ready to be sent to the user.</returns>
     public static Result<TTarget, APIGatewayHttpApiV2ProxyResponse> DeserializeJsonEntity<TTarget>(APIGatewayHttpApiV2ProxyRequest request, ILambdaLogger logger)
         where TTarget : new()
     {
