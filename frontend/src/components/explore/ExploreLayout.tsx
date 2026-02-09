@@ -11,10 +11,13 @@ export default function ExploreLayout() {
         <ExploreSearchBar />
 
         {/* BookGridSection */}
-        <BookGridSection backgroundClass="bg-gray-200" title="Book" />
-        <BookGridSection backgroundClass="bg-gray-300" title="Book" />
-        <BookGridSection backgroundClass="bg-gray-200" title="Book" />
-        <BookGridSection backgroundClass="bg-gray-300" title="Book" />
+        <BookGridSection backgroundClass="bg-gray-200" heightClass="h-[1000]" title="Book" bookHeight="w-40" count={6} />
+        <BookGridSection backgroundClass="bg-gray-300" heightClass="h-[1000]" title="Book" bookHeight="w-40" count={6} />
+        <BookGridSection backgroundClass="bg-gray-200" heightClass="h-[1000]" title="Book" bookHeight="w-40" count={6} />
+        <BookGridSection backgroundClass="bg-gray-300" heightClass="h-[1000]" title="Book" bookHeight="w-40" count={6} />
+        <BookGridSection backgroundClass="bg-gray-200" heightClass="h-[1000]" title="Book" bookHeight="w-40" count={6} />
+        <BookGridSection backgroundClass="bg-gray-300" heightClass="h-[1000]" title="Book" bookHeight="w-40" count={6} />
+        <BookGridSection backgroundClass="bg-gray-200" heightClass="h-[1000]" title="Book" bookHeight="w-40" count={6} />
       </main>
     </div>
   );

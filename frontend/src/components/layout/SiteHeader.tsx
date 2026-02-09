@@ -23,14 +23,13 @@ export default function SiteHeader() {
             <Link to="/account" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">Account</Link>
           </nav>
 
-          {/* Search Bar */}
-          <div className="w-40 sm:w-64 m-auto">
-            <input
-              type="search"
-              placeholder="Search books..."
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            />
-          </div>
+        {/* Page Choices */}
+        <nav className="hidden sm:flex gap-10 text-sm text-gray-600">
+          <Link to="/" className="hover:text-gray-900 text-lg pl-40">Home</Link>
+          <Link to="/explore" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">Explore</Link>
+          <Link to="/about" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">About</Link>
+          <Link to="/user_upload" className="hover:text-gray-900 text-lg pl-10 border-l border-gray-300">Upload</Link>
+        </nav>
 
           {/* Login */}
           {auth.isAuthed ? (

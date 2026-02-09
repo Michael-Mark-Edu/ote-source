@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Text.Json;
 
 namespace OTE.Data.Test;
 
@@ -14,7 +13,7 @@ public class Tests : IDisposable
     {
         _factory = new OteContextFactory();
         _context = _factory.CreateDbContext([]);
-        _repo = new SchoolRepo(_context);
+        _repo = new SchoolRepo(_context, new MockLambdaLogger());
         _transaction = _context.Database.BeginTransaction();
     }
 
@@ -33,6 +32,10 @@ public class Tests : IDisposable
     [Fact]
     public async Task BasicCRUDTest()
     {
+        var all = await _repo.GetAll();
+        Assert.NotNull(all);
+        var initialCount = all.Count();
+
         var dto = new SchoolDto
         {
             SchoolName = "Foo Bar",
@@ -43,21 +46,19 @@ public class Tests : IDisposable
 
         var entity = dto.Map();
 
-        Assert.Equal(1, await _repo.Insert(entity));
+        var insertedEntry = await _repo.Insert(entity);
+        Assert.NotNull(insertedEntry);
+        var inserted = insertedEntry.Entity;
+        Assert.Equal(entity.SchoolName, inserted.SchoolName);
+        Assert.Equal(entity.SchoolAcronym, inserted.SchoolAcronym);
+        Assert.Equal(entity.State, inserted.State);
+        Assert.Equal(entity.City, inserted.City);
 
-        var all = await _repo.GetAll();
-        Assert.Single(all);
+        var key = inserted.SchoolID;
 
-        int key = all.First().SchoolID;
-
-        Assert.Equal(JsonSerializer.Serialize(new SchoolEntity
-        {
-            SchoolID = key,
-            SchoolName = "Foo Bar",
-            SchoolAcronym = "FB",
-            State = "OR",
-            City = "Nowhere"
-        }), JsonSerializer.Serialize(all.First()));
+        all = await _repo.GetAll();
+        Assert.NotNull(all);
+        Assert.Equal(initialCount + 1, all.Count());
 
         dto = new SchoolDto
         {
@@ -69,20 +70,25 @@ public class Tests : IDisposable
 
         entity = dto.Map();
 
-        Assert.Equal(1, await _repo.Update(key, entity));
-        Assert.Single(all);
-        Assert.Equal(JsonSerializer.Serialize(new SchoolEntity
-        {
-            SchoolID = key,
-            SchoolName = "Baz Quz",
-            SchoolAcronym = "BQ",
-            State = "OR",
-            City = "Nowhere"
-        }), JsonSerializer.Serialize(all.First()));
+        var updatedEntry = await _repo.Update(key, entity);
+        Assert.NotNull(updatedEntry);
+        var updated = updatedEntry.Entity;
+        Assert.Equal(entity.SchoolName, updated.SchoolName);
+        Assert.Equal(entity.SchoolAcronym, updated.SchoolAcronym);
+        Assert.Equal(entity.State, updated.State);
+        Assert.Equal(entity.City, updated.City);
 
-        Assert.Equal(1, await _repo.Delete(key));
         all = await _repo.GetAll();
-        Assert.Empty(all);
+        Assert.NotNull(all);
+        Assert.Equal(initialCount + 1, all.Count());
+
+        var deletedEntry = await _repo.Delete(key);
+        Assert.NotNull(deletedEntry);
+        var deleted = deletedEntry.Entity;
+
+        all = await _repo.GetAll();
+        Assert.NotNull(all);
+        Assert.Equal(initialCount, all.Count());
     }
 }
 
