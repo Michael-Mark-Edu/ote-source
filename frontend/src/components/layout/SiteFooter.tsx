@@ -37,7 +37,7 @@ export default function SiteFooter() {
               </li>
 
               <li>
-                <Link to="/sign_in" className="hover:text-white">Sign In</Link>
+                <Link to="/account" className="hover:text-white">Account</Link>
               </li>
 
             </ul>
