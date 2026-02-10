@@ -280,6 +280,11 @@ public class Function
     {
         using var oteContext = new OteContext();
 
+        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, userId);
+
+        if (validateCookieResult != null)
+            return validateCookieResult;
+
         var foundUser = await oteContext
             .Users
             .Where(e => e.UserId == userId)

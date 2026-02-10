@@ -58,6 +58,11 @@ public class Function
     {
         using var oteContext = new OteContext();
 
+        var validateCookieResult = await ApiFunctions.ValidateCookiesAdminAction(request, oteContext);
+
+        if (validateCookieResult != null)
+            return validateCookieResult;
+
         var users = await oteContext
             .Users
             .Where(e => e.DeletedAt == null)

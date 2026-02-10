@@ -16,6 +16,7 @@ public class DeleteTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
+        request.Cookies = new string[] { "__Host-Http-UserId=6", "__Host-Http-SessionToken=AA==" };
 
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
@@ -41,6 +42,7 @@ public class DeleteTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
+        request.Cookies = new string[] { "__Host-Http-UserId=6", "__Host-Http-SessionToken=AA==" };
 
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
