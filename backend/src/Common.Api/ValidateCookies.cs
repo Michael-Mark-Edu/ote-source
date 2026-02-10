@@ -107,7 +107,20 @@ public static partial class ApiFunctions
 
         var sessionTokenData = sessionTokenDataCookie.Substring(25);
 
-        byte[] sessionTokenDataBytes = Convert.FromBase64String(sessionTokenData);
+        byte[] sessionTokenDataBytes;
+        try
+        {
+            sessionTokenDataBytes = Convert.FromBase64String(sessionTokenData);
+        }
+        catch
+        {
+            return new Result<SessionTokenCacheEntity, APIGatewayHttpApiV2ProxyResponse>(new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 401,
+                Body = $"{{\"error\":\"Cookie '__Host-Http-SessionToken' must be a base-64 string.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            });
+        }
 
         var dbSessionToken = await oteContext
             .SessionTokens
