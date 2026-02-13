@@ -76,8 +76,8 @@ public class PostTests
         request.Body =
         """
         {
-            "username": "bobbrown",
-            "password": "password4"
+            "username": "charliedavis",
+            "password": "password5"
         }
         """;
 

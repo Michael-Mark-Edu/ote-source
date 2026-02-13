@@ -305,6 +305,26 @@ public class Function
             .Users
             .Update(foundUser);
 
+        var foundPasswords = await oteContext
+            .Argon2idPasswords
+            .Where(e => e.UserId == userId)
+            .ToListAsync();
+
+        foreach (var password in foundPasswords)
+            oteContext
+                .Argon2idPasswords
+                .Remove(password);
+
+        var foundSessionTokens = await oteContext
+            .SessionTokens
+            .Where(e => e.UserId == userId)
+            .ToListAsync();
+
+        foreach (var token in foundSessionTokens)
+            oteContext
+                .SessionTokens
+                .Remove(token);
+
         try
         {
             await oteContext.SaveChangesAsync();

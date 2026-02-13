@@ -126,7 +126,8 @@ public static partial class ApiFunctions
             .SessionTokens
             .Include(e => e.User)
             .Where(e => e.Token == sessionTokenDataBytes)
-            .SingleOrDefaultAsync();
+            .Where(e => e.UserId == sessionTokenUserIdParse)
+            .FirstOrDefaultAsync();
 
         if (dbSessionToken == null)
         {
