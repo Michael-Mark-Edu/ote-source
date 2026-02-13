@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OTE.Data.EFCore.Contexts;
@@ -11,9 +12,11 @@ using OTE.Data.EFCore.Contexts;
 namespace Data.EFCore.Migrations
 {
     [DbContext(typeof(OteContext))]
-    partial class OteContextModelSnapshot : ModelSnapshot
+    [Migration("20260120045316_CreatedDeletedAt")]
+    partial class CreatedDeletedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,6 +38,10 @@ namespace Data.EFCore.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasJsonPropertyName("createdAt");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasJsonPropertyName("deletedAt");
 
                     b.Property<byte[]>("Hash")
                         .IsRequired()
@@ -58,17 +65,11 @@ namespace Data.EFCore.Migrations
                         .HasColumnType("bytea")
                         .HasJsonPropertyName("salt");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasJsonPropertyName("userId");
-
                     b.Property<byte>("Version")
                         .HasColumnType("smallint")
                         .HasJsonPropertyName("version");
 
                     b.HasKey("Argon2idPasswordId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Argon2idPasswords", "public");
                 });
@@ -117,38 +118,6 @@ namespace Data.EFCore.Migrations
                     b.ToTable("Schools", "public");
                 });
 
-            modelBuilder.Entity("OTE.Data.EFCore.Entities.SessionTokenCacheEntity", b =>
-                {
-                    b.Property<int>("SessionTokenCacheId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SessionTokenCacheId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasJsonPropertyName("createdAt");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasJsonPropertyName("expiresAt");
-
-                    b.Property<byte[]>("Token")
-                        .IsRequired()
-                        .HasColumnType("bytea")
-                        .HasJsonPropertyName("token");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasJsonPropertyName("userId");
-
-                    b.HasKey("SessionTokenCacheId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SessionTokens", "public");
-                });
-
             modelBuilder.Entity("OTE.Data.EFCore.Entities.UserEntity", b =>
                 {
                     b.Property<int>("UserId")
@@ -157,6 +126,10 @@ namespace Data.EFCore.Migrations
                         .HasJsonPropertyName("userId");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+
+                    b.Property<int>("Argon2idPasswordId")
+                        .HasColumnType("integer")
+                        .HasJsonPropertyName("argon2idPasswordId");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -176,10 +149,6 @@ namespace Data.EFCore.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasJsonPropertyName("firstName");
-
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean")
-                        .HasJsonPropertyName("isAdmin");
 
                     b.Property<string>("LastName")
                         .HasMaxLength(255)
@@ -203,6 +172,11 @@ namespace Data.EFCore.Migrations
 
                     b.HasKey("UserId");
 
+                    b.HasIndex("Argon2idPasswordId");
+
+                    b.HasIndex("EmailAddress")
+                        .IsUnique();
+
                     b.HasIndex("SchoolId");
 
                     b.HasIndex("Username")
@@ -211,35 +185,21 @@ namespace Data.EFCore.Migrations
                     b.ToTable("Users", "public");
                 });
 
-            modelBuilder.Entity("OTE.Data.EFCore.Entities.Argon2idPasswordEntity", b =>
-                {
-                    b.HasOne("OTE.Data.EFCore.Entities.UserEntity", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OTE.Data.EFCore.Entities.SessionTokenCacheEntity", b =>
-                {
-                    b.HasOne("OTE.Data.EFCore.Entities.UserEntity", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("OTE.Data.EFCore.Entities.UserEntity", b =>
                 {
+                    b.HasOne("OTE.Data.EFCore.Entities.Argon2idPasswordEntity", "Argon2idPassword")
+                        .WithMany()
+                        .HasForeignKey("Argon2idPasswordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("OTE.Data.EFCore.Entities.SchoolEntity", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Argon2idPassword");
 
                     b.Navigation("School");
                 });

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OTE.Data.EFCore.Entities;
 
@@ -6,18 +7,29 @@ namespace OTE.Data.EFCore.Entities;
 public class SchoolEntity
 {
     [Key]
-    public int SchoolID { get; set; }
+    [JsonPropertyName("schoolId")]
+    public int SchoolId { get; set; }
 
     [MaxLength(255)]
-    public string SchoolName { get; set; } = string.Empty;
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
 
     [MaxLength(10)]
-    public string SchoolAcronym { get; set; } = string.Empty;
+    [JsonPropertyName("acronym")]
+    public string Acronym { get; set; } = string.Empty;
 
     [MaxLength(2)]
     [MinLength(2)]
-    public string? State { get; set; }
+    [JsonPropertyName("state")]
+    public string? State { get; set; } = null;
 
     [MaxLength(255)]
-    public string? City { get; set; }
+    [JsonPropertyName("city")]
+    public string? City { get; set; } = null;
+
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [JsonPropertyName("deletedAt")]
+    public DateTime? DeletedAt { get; set; } = null;
 }
