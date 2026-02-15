@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import AccountTabs from "./AccountTabs";
 import MyListingsTab from "./tabs/MyListingsTab";
 import SavedListingsTab from "./tabs/SavedListingsTab";
@@ -7,20 +8,41 @@ import type { SessionTokenGetDto } from "../../api/users";
 
 export type AccountTabKey = "myListings" | "savedListings" | "account";
 
+type AccountSearch = { tab?: AccountTabKey };
+
 export default function AccountPage() {
-  const [activeTab, setActiveTab] = useState<AccountTabKey>("account");
-    const [session, setSession] = useState<SessionTokenGetDto | null>(null);
+  const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as AccountSearch;
+
+  const activeTab: AccountTabKey =
+    search.tab === "myListings" ||
+    search.tab === "savedListings" ||
+    search.tab === "account"
+      ? search.tab
+      : "account";
+
+  const [session, setSession] = useState<SessionTokenGetDto | null>(null);
+
+  function changeTab(tab: AccountTabKey) {
+    navigate({
+      to: "/account",
+      search: { tab },
+      replace: true,
+    });
+  }
 
   return (
     <div className="mx-auto max-w-3xl p-6 bg-amber-50 min-h-screen">
       <h1 className="text-2xl font-semibold mb-6">Account</h1>
 
-      <AccountTabs activeTab={activeTab} onChange={setActiveTab} />
+      <AccountTabs activeTab={activeTab} onChange={changeTab} />
 
       <div className="mt-6">
         {activeTab === "myListings" && <MyListingsTab />}
         {activeTab === "savedListings" && <SavedListingsTab />}
-        {activeTab === "account" && (<AccountTab userId={session?.userId ?? null} onLoggedIn={setSession} />)}
+        {activeTab === "account" && (
+          <AccountTab userId={session?.userId ?? null} onLoggedIn={setSession} />
+        )}
       </div>
     </div>
   );
