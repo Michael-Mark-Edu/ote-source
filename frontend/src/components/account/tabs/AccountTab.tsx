@@ -16,7 +16,7 @@ export default function AccountTab({
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginState, setLoginState] = useState<"idle" | "loggingIn">("idle");
 
-  // IMPORTANT: your hook must now accept userId and load via GET /api/users/{userId}
+  // must now accept userId and load via GET /api/users/{userId}
   const { profile, form, setField, save, saveState, errorMsg, loading } =
     useAccountProfile(userId);
 

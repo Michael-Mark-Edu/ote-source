@@ -1,13 +1,9 @@
-import BookGridSection from "../explore/BookGridSection";
+import BookCarousel from "./BookCarousel";
 
 export default function HomePopularBooks() {
   return (
-    <BookGridSection
-      backgroundClass="bg-gray-800"
-      heightClass="h-[600px]"
-      title="Book"
-      count={4}
-      columns={4}
-    />
+    <section className="bg-gray-800">
+      <BookCarousel sectionTitle="Popular Reads" backgroundClass="bg-gray-800" totalBooks={16} perPage={4} />
+    </section>
   );
 }

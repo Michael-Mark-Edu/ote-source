@@ -26,7 +26,8 @@ jobs:
   frontend-upload-development:
     needs: [backend-test]
     if: ${{ github.event_name == 'push'
-        && github.ref == 'refs/heads/development' }}
+        && github.ref == 'refs/heads/development'
+        && github.repository == 'Michael-Mark-Edu/ote-source' }}
     runs-on: ubuntu-latest
 
     steps:

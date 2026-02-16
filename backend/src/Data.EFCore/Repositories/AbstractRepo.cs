@@ -1,4 +1,6 @@
+using Amazon.Lambda.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OTE.Data.EFCore.Contexts;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,60 +8,100 @@ namespace OTE.Data.EFCore.Repositories;
 
 /// <summary>Abstract class that implements virtual repository methods.</summary>
 /// <param name="context">The `OteContext` to use for database CRUD.</param>
+/// <param name="logger">The `ILambdaLogger` used for logging.</param>
 /// <typeparam name="TEntity">The entity type the repository uses.</typeparam>
-public abstract class AbstractRepo<TEntity>(OteContext context)
+public abstract class AbstractRepo<TEntity>(OteContext context, ILambdaLogger logger)
     where TEntity : class
 {
     protected DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
     /// <summary>Gets all entities in the table.</summary>
     /// <returns>The entities in the table.</returns>
-    public virtual async Task<IEnumerable<TEntity>> GetAll()
+    /// <remarks>Returns null if an exception occured.</remarks>
+    public virtual async Task<IEnumerable<TEntity>?> GetAll()
     {
-        return await _dbSet.ToListAsync();
+        try
+        {
+            return await _dbSet.ToListAsync();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e.Message);
+            return null;
+        }
     }
 
     /// <summary>Inserts an entity into the table.</summary>
     /// <param name="entity">The `TEntity` containing the data to insert into the table.</param>
-    /// <returns>The number of entities in the table that got inserted.</returns>
-    public virtual async Task<int> Insert(TEntity entity)
+    /// <returns>A tracking entry of the inserted entity.</returns>
+    /// <remarks>Returns null if an exception occured.</remarks>
+    public virtual async ValueTask<EntityEntry<TEntity>?> Insert(TEntity entity)
     {
-        await _dbSet.AddAsync(entity);
-        return await context.SaveChangesAsync();
+        try
+        {
+            var entry = await _dbSet.AddAsync(entity);
+            await context.SaveChangesAsync();
+            return entry;
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e.Message);
+            return null;
+        }
     }
 
     /// <summary>Updates an entity in the table.</summary>
     /// <param name="key">The primary key of the table entity that you want to update.</param>
     /// <param name="entity">The `TEntity` containing the data to replace the table entity with.</param>
-    /// <returns>The number of entities in the table that got updated.</returns>
-    public virtual async Task<int> Update(object key, TEntity entity)
+    /// <returns>A tracking entry of the updated entity.</returns>
+    /// <remarks>Returns null if an exception occured, or if no objects with the key exist in the table.</remarks>
+    public virtual async Task<EntityEntry<TEntity>?> Update(object key, TEntity entity)
     {
-        TEntity? target = await _dbSet.FindAsync(key);
-        if (target == null)
-            return 0;
-
-        foreach (var property in typeof(TEntity).GetProperties())
+        try
         {
-            if (property.GetCustomAttributes(typeof(KeyAttribute), false).Any())
-                continue;
+            TEntity? target = await _dbSet.FindAsync(key);
+            if (target == null)
+                return null;
 
-            property.SetValue(target, property.GetValue(entity));
+            foreach (var property in typeof(TEntity).GetProperties())
+            {
+                if (property.GetCustomAttributes(typeof(KeyAttribute), false).Any())
+                    continue;
+
+                property.SetValue(target, property.GetValue(entity));
+            }
+
+            var update = _dbSet.Update(target);
+            await context.SaveChangesAsync();
+            return update;
         }
-
-        return await context.SaveChangesAsync();
+        catch (Exception e)
+        {
+            logger.LogError(e.Message);
+            return null;
+        }
     }
 
     /// <summary>Deletes an entity in the table.</summary>
     /// <param name="key">The primary key of the table entity that you want to delete.</param>
-    /// <returns>The number of entities in the table that got deleted.</returns>
-    public virtual async Task<int> Delete(object key)
+    /// <returns>A tracking entry of the deleted entity.</returns>
+    /// <remarks>Returns null if an exception occured, or if no objects with the key exist in the table.</remarks>
+    public virtual async Task<EntityEntry<TEntity>?> Delete(object key)
     {
-        TEntity? dbEntity = await _dbSet.FindAsync(key);
-        if (dbEntity == null)
-            return 0;
+        try
+        {
+            TEntity? dbEntity = await _dbSet.FindAsync(key);
+            if (dbEntity == null)
+                return null;
 
-        _dbSet.Remove(dbEntity);
-
-        return await context.SaveChangesAsync();
+            var removed = _dbSet.Remove(dbEntity);
+            await context.SaveChangesAsync();
+            return removed;
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e.Message);
+            return null;
+        }
     }
 }
