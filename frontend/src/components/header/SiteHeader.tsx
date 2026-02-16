@@ -2,7 +2,7 @@ import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import AuthModal from "../auth/AuthModal";
 import { useAuth } from "../auth/useAuth";
-import {UserIcon } from "@heroicons/react/24/outline";
+import {UserIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import { UserIcon as UserIconSolid } from "@heroicons/react/24/solid";
 import type { AccountTabKey } from "../account/AccountPage";
 
@@ -68,16 +68,28 @@ export default function SiteHeader() {
 
           {/* Login Auth */}
           {auth.isAuthed ? (
-            <button
-              type="button"
-              onClick={() => setIsPanelOpen(true)}
-              className="p-2 rounded-full hover:bg-gray-100 transition"
-              aria-label="Account"
-            >
-              <UserIconSolid className="h-6 w-6 text-gray-700" />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Upload icon */}
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/user_upload" })}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+                aria-label="Upload"
+              >
+                <ArrowUpTrayIcon className="h-6 w-6 text-gray-700" />
+              </button>
+
+              {/* Profile icon */}
+              <button
+                type="button"
+                onClick={() => setIsPanelOpen(true)}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+                aria-label="Account"
+              >
+                <UserIconSolid className="h-6 w-6 text-gray-700" />
+              </button>
+            </div>
           ) : (
-            // User Icon
             <button
               type="button"
               onClick={() => setIsLoginOpen(true)}

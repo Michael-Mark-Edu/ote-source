@@ -55,7 +55,11 @@ export default function BookGridSection({
 
               return (
                 <div key={idx} className={itemClass}>
-                  <BookCard title={`${title} ${idx + 1}`} bookHeight={bookHeight} />
+                  <BookCard 
+                    title={`${title} ${idx + 1}`} 
+                    bookHeight={bookHeight} 
+                    listingId={String(idx + 1)} 
+                  />
                 </div>
               );
             })}
@@ -65,7 +69,12 @@ export default function BookGridSection({
             {Array.from({ length: count }, (_, i) => {
               const idx = startIndex + i;
               return (
-                <BookCard key={idx} title={`${title} ${idx + 1}`} bookHeight={bookHeight} />
+                <BookCard 
+                key={idx} 
+                title={`${title} ${idx + 1}`} 
+                bookHeight={bookHeight} 
+                listingId={String(idx + 1)}
+                />
               );
             })}
           </div>
