@@ -10,18 +10,6 @@ function RouteComponent() {
   return (
     <>
     {/** Webpage section */}
-        {/* Banner section */}
-        <section className='h-[100px] bg-gray-200'>
-            <div className="mx-auto max-w-6xl h-full  grid items-stretch gap-24 lg:grid-cols-1">
-                {/* Banner Image */}
-                <div className="h-auto w-auto">
-                    <div className="h-full w-full rounded-2xl flex items-center justify-center bg-blue-300">
-                        <span className="text-black text-sm">Banner Image Placeholder (needed or not?)</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
         {/** test section for input data (looks ugly) */}
         <main className="flex flex-wrap justify-center-safe items-center-safe bg-white">
             <form className="w-full max-w-lg flex flex-wrap justify-center-safe items-center-safe">

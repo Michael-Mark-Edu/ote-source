@@ -1,5 +1,5 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-import SiteHeader from "../components/layout/SiteHeader";
+import SiteHeader from "../components/header/SiteHeader";
 import SiteFooter from "../components/layout/SiteFooter";
 import { AuthProvider } from "../components/auth/AuthProvider";
 
