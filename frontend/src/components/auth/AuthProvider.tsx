@@ -9,13 +9,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(saved?.token ?? null);
   const [user, setUser] = useState<AuthUser | null>(saved?.user ?? null);
 
-  const isAuthed = !!token && !!user;
-
   const value = useMemo<AuthState>(
     () => ({
-      isAuthed: Boolean(token),
       token,
       user,
+      isAuthed: Boolean(token && user),
       login: (newToken: string, newUser: AuthUser) => {
         setToken(newToken);
         setUser(newUser);
@@ -27,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuth();
       },
     }),
-    [isAuthed, token, user]
+    [token, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
