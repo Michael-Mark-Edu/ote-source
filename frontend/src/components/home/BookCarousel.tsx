@@ -47,10 +47,8 @@ export default function BookCarousel({
               heightClass="h-auto"
               title="Book"
               count={perPage}
-              columns={4}
-              bookHeight="w-70"
+              bookHeight="w-48"
               startIndex={startIndex}
-              layout="carousel"
             />
           </div>
 
