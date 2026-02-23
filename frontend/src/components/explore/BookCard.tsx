@@ -16,7 +16,7 @@ export default function BookCard({
       className="block"
     >
       <div className="rounded-2xl border p-2 shadow-sm bg-white hover:shadow-md transition">
-        <div className={`aspect-9/16 rounded-xl grid place-items-center-safe bg-blue-300 ${bookHeight}`}>
+        <div className={`aspect-9/16 rounded-xl grid place-items-center-safe bg-blue-300 w-full ${bookHeight}`}>
           <span className="text-sm text-black">{title}</span>
         </div>
       </div>
