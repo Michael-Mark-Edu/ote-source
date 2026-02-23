@@ -138,7 +138,7 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
               value={filters.class}
               onChange={(e) => update({ ...filters, class: e.target.value })}
               placeholder="e.g., CST 211"
-              className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
+              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
             />
             {/* TODO: Implement dropdown/autocomplete */}
             <p className="mt-1 text-xs text-slate-500">Placeholder for dropdown/autocomplete later.</p> 
@@ -151,7 +151,7 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
               value={filters.subject}
               onChange={(e) => update({ ...filters, subject: e.target.value })}
               placeholder="e.g., Data Structures"
-              className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
+              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
             />
             {/* TODO: Implement dropdown/autocomplete */}
             <p className="mt-1 text-xs text-slate-500">Placeholder for dropdown/autocomplete later.</p>
@@ -164,7 +164,7 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
               value={filters.edition}
               onChange={(e) => update({ ...filters, edition: e.target.value })}
               placeholder="e.g., 3rd"
-              className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
+              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
             />
           </section>
         </div>
