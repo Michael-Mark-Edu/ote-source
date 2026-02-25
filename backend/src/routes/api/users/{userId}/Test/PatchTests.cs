@@ -42,6 +42,39 @@ public class PatchTests
     }
 
     [Fact]
+    public async Task SelfRouteTest()
+    {
+        var function = new Function();
+        var context = new TestLambdaContext();
+        var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.PathParameters = new Dictionary<string, string> { { "userId", "self" } };
+        request.RequestContext = new();
+        request.RequestContext.Http = new();
+        request.RequestContext.Http.Method = "PATCH";
+        request.Cookies = new string[] { "__Host-Http-UserId=2", "__Host-Http-SessionToken=AA==" };
+
+        request.IsBase64Encoded = false;
+        request.Body =
+        """
+        {
+            "firstName": "Johhn",
+            "lastName": "Doee"
+        }
+        """;
+
+        var response = await function.FunctionHandler(request, context);
+        Assert.NotNull(response);
+
+        context.Logger.LogDebug($"PATCH /api/users/{{userId}} SelfRouteTest | response.Body = {response.Body}");
+        Assert.Equal(200, response.StatusCode);
+
+        var entities = JsonSerializer.Deserialize<UserGetDto>(response.Body);
+        Assert.NotNull(entities);
+        Assert.Equal("Johhn", entities.FirstName);
+        Assert.Equal("Doee", entities.LastName);
+    }
+
+    [Fact]
     public async Task AdminPatchTest()
     {
         var function = new Function();

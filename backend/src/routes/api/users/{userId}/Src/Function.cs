@@ -7,7 +7,6 @@ using OTE.Common;
 using OTE.Common.Api;
 using OTE.Data.EFCore.Contexts;
 using OTE.Data.EFCore.Dtos;
-using System.Text;
 using System.Text.Json;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -36,18 +35,31 @@ public class Function
                 }
             };
         }
-        var parsedIdResult = SafeAtoi.Parse(userId);
-        if (!parsedIdResult.Ok)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"{parsedIdResult.UnwrapError()}\"}}",
-                Headers = new Dictionary<string, string> {
-                    { "Content-Type", "application/json" },
-                }
-            };
 
-        int parsedId = parsedIdResult.Unwrap();
+        int parsedId;
+
+        if (userId == "self")
+        {
+            var sessionTokenUserIdResult = await ApiFunctions.GetUserIdFromCookie(request);
+            if (!sessionTokenUserIdResult.Ok)
+                return sessionTokenUserIdResult.UnwrapError();
+            parsedId = sessionTokenUserIdResult.Unwrap();
+        }
+        else
+        {
+            var parsedIdResult = SafeAtoi.Parse(userId);
+            if (!parsedIdResult.Ok)
+                return new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 400,
+                    Body = $"{{\"error\":\"{parsedIdResult.UnwrapError()}\"}}",
+                    Headers = new Dictionary<string, string> {
+                        { "Content-Type", "application/json" },
+                    }
+                };
+
+            parsedId = parsedIdResult.Unwrap();
+        }
 
         string method;
         try
