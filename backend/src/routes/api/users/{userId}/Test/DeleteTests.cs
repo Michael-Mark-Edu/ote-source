@@ -6,13 +6,39 @@ namespace OTE.Routes.Api.Users.UserId;
 
 public class DeleteTests
 {
+    // [Fact]
+    // public async Task UserSelfDeleteTest()
+    // {
+    //     var function = new Function();
+    //     var context = new TestLambdaContext();
+    //     var request = new APIGatewayHttpApiV2ProxyRequest();
+    //     request.PathParameters = new Dictionary<string, string> { { "userId", "3" } };
+    //     request.RequestContext = new();
+    //     request.RequestContext.Http = new();
+    //     request.RequestContext.Http.Method = "DELETE";
+    //     request.Cookies = new string[] { "__Host-Http-UserId=3", "__Host-Http-SessionToken=AA==" };
+    //
+    //     var response = await function.FunctionHandler(request, context);
+    //     Assert.NotNull(response);
+    //
+    //     context.Logger.LogDebug($"DELETE /api/users/{{userId}} UserSelfDeleteTest | response.Body = {response.Body}");
+    //     Assert.Equal(204, response.StatusCode);
+    //
+    //     request.RequestContext.Http.Method = "GET";
+    //
+    //     response = await function.FunctionHandler(request, context);
+    //     Assert.NotNull(response);
+    //
+    //     Assert.Equal(404, response.StatusCode);
+    // }
+
     [Fact]
-    public async Task UserSelfDeleteTest()
+    public async Task SelfRouteTest()
     {
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string> { { "userId", "3" } };
+        request.PathParameters = new Dictionary<string, string> { { "userId", "self" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
@@ -21,7 +47,7 @@ public class DeleteTests
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
 
-        context.Logger.LogDebug($"DELETE /api/users/{{userId}} UserSelfDeleteTest | response.Body = {response.Body}");
+        context.Logger.LogDebug($"DELETE /api/users/{{userId}} SelfRouteTest | response.Body = {response.Body}");
         Assert.Equal(204, response.StatusCode);
 
         request.RequestContext.Http.Method = "GET";

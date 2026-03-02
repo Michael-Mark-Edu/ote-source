@@ -30,6 +30,28 @@ public class GetTests
     }
 
     [Fact]
+    public async Task SelfRouteTest()
+    {
+        var function = new Function();
+        var context = new TestLambdaContext();
+        var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.PathParameters = new Dictionary<string, string> { { "userId", "self" } };
+        request.RequestContext = new();
+        request.RequestContext.Http = new();
+        request.RequestContext.Http.Method = "GET";
+        request.Cookies = new string[] { "__Host-Http-UserId=1" };
+
+        var response = await function.FunctionHandler(request, context);
+        Assert.NotNull(response);
+
+        context.Logger.LogDebug($"GET /api/users/{{userId}} SelfRouteTest | response.Body = {response.Body}");
+        Assert.Equal(200, response.StatusCode);
+
+        var entities = JsonSerializer.Deserialize<UserGetDto>(response.Body);
+        Assert.NotNull(entities);
+    }
+
+    [Fact]
     public async Task NegativeIdTest()
     {
         var function = new Function();
