@@ -6,48 +6,22 @@ namespace OTE.Routes.Api.Listings.ListingId;
 
 public class DeleteTests
 {
-    // [Fact]
-    // public async Task UserSelfDeleteTest()
-    // {
-    //     var function = new Function();
-    //     var context = new TestLambdaContext();
-    //     var request = new APIGatewayHttpApiV2ProxyRequest();
-    //     request.PathParameters = new Dictionary<string, string> { { "userId", "3" } };
-    //     request.RequestContext = new();
-    //     request.RequestContext.Http = new();
-    //     request.RequestContext.Http.Method = "DELETE";
-    //     request.Cookies = new string[] { "__Host-Http-UserId=3", "__Host-Http-SessionToken=AA==" };
-    //
-    //     var response = await function.FunctionHandler(request, context);
-    //     Assert.NotNull(response);
-    //
-    //     context.Logger.LogDebug($"DELETE /api/listings/{{listingId}} UserSelfDeleteTest | response.Body = {response.Body}");
-    //     Assert.Equal(204, response.StatusCode);
-    //
-    //     request.RequestContext.Http.Method = "GET";
-    //
-    //     response = await function.FunctionHandler(request, context);
-    //     Assert.NotNull(response);
-    //
-    //     Assert.Equal(404, response.StatusCode);
-    // }
-
     [Fact]
-    public async Task SelfRouteTest()
+    public async Task UserSelfDeleteTest()
     {
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string> { { "userId", "self" } };
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "5" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
-        request.Cookies = new string[] { "__Host-Http-UserId=3", "__Host-Http-SessionToken=AA==" };
+        request.Cookies = new string[] { "__Host-Http-UserId=2", "__Host-Http-SessionToken=AA==" };
 
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
 
-        context.Logger.LogDebug($"DELETE /api/listings/{{listingId}} SelfRouteTest | response.Body = {response.Body}");
+        context.Logger.LogDebug($"DELETE /api/listings/{{listingId}} UserSelfDeleteTest | response.Body = {response.Body}");
         Assert.Equal(204, response.StatusCode);
 
         request.RequestContext.Http.Method = "GET";
@@ -64,7 +38,7 @@ public class DeleteTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string> { { "userId", "4" } };
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "4" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
@@ -90,7 +64,7 @@ public class DeleteTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string> { { "userId", "4" } };
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "3" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
@@ -109,11 +83,11 @@ public class DeleteTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string> { { "userId", "1" } };
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "3" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
-        request.Cookies = new string[] { "__Host-Http-UserId=2", "__Host-Http-SessionToken=AA==" };
+        request.Cookies = new string[] { "__Host-Http-UserId=3", "__Host-Http-SessionToken=AA==" };
 
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
@@ -128,7 +102,7 @@ public class DeleteTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string> { { "userId", "1" } };
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "3" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
@@ -146,7 +120,7 @@ public class DeleteTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
-        request.PathParameters = new Dictionary<string, string> { { "userId", "-1" } };
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "-1" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "DELETE";
