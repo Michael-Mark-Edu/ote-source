@@ -1,13 +1,5 @@
-import BookGridSection from "../explore/BookGridSection";
+import BookCarousel from "./BookCarousel";
 
 export default function HomeLatestBooks() {
-  return (
-    <BookGridSection
-      backgroundClass="bg-gray-400"
-      heightClass="h-[600px]"
-      title="Book"
-      count={4}
-      columns={4}
-    />
-  );
+ return <BookCarousel sectionTitle="Latest Additions" backgroundClass="bg-gray-400" totalBooks={16} perPage={4} />;
 }
