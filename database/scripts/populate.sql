@@ -38,4 +38,18 @@ INSERT INTO "SessionTokens" ("UserId", "CreatedAt", "ExpiresAt", "Token") VALUES
 (5, '2026-02-05 14:00:00-08', '9026-02-05 14:00:00-08', '\x00'),
 (6, '2026-02-05 14:00:00-08', '9026-02-05 14:00:00-08', '\x00');
 
+INSERT INTO "Books" ("ISBN", "Title", "Authors", "Publishers", "Description", "PublishDate", "CreatedAt") VALUES
+('12345', 'Tales of Foo', 'Mr. Foo', 'Foo Corp', 'Foo goes on an adventure', '1995-01-01 01:00:00-08', '2026-01-01 01:00:00-08'),
+('12346', 'Tales of Bar', 'Mr. Bar', 'Bar Corp', 'Bar goes on an adventure', '1996-01-01 01:00:00-08', '2026-01-02 01:00:00-08'),
+('12347', 'Tales of Baz', 'Mr. Baz', 'Baz Corp', 'Baz goes on an adventure', '1997-01-01 01:00:00-08', '2026-01-03 01:00:00-08'),
+('12348', 'Tales of Quz', 'Mr. Quz', 'Quz Corp', 'Quz goes on an adventure', '1998-01-01 01:00:00-08', '2026-01-04 01:00:00-08'),
+('12349', 'Tales of Quuz', 'Mr. Quuz', 'Quuz Corp', 'Quuz goes on an adventure', '1999-01-01 01:00:00-08', '2026-01-05 01:00:00-08');
+
+INSERT INTO "BookListings" ("Condition", "PurchaseType", "Price", "CreatedAt", "UserId", "BookISBN") VALUES
+('Good', 'Buy', '$19.99', '2026-01-01 01:00:00-08', 1, '12345'),
+('Good', 'Rent', '$29.99', '2026-01-02 01:00:00-08', 1, '12346'),
+('Used', 'Buy', '$39.99', '2026-01-03 01:00:00-08', 1, '12347'),
+('Used', 'Rent', '$49.99', '2026-01-04 01:00:00-08', 2, '12348'),
+('Good', 'Buy', '$59.99', '2026-01-05 01:00:00-08', 2, '12349');
+
 COMMIT;

@@ -25,7 +25,7 @@ public class BookListingGetDto : IGetDto<BookListingEntity>
     public int UserId { get; set; }
 
     [JsonPropertyName("isbn")]
-    public string ISBN { get; set; }
+    public string BookISBN { get; set; }
 
     public BookListingGetDto(BookListingEntity bookListingEntity)
     {
@@ -34,17 +34,17 @@ public class BookListingGetDto : IGetDto<BookListingEntity>
         PurchaseType = bookListingEntity.PurchaseType;
         Price = bookListingEntity.Price;
         UserId = bookListingEntity.UserId;
-        ISBN = bookListingEntity.ISBN;
+        BookISBN = bookListingEntity.BookISBN;
     }
 
     [JsonConstructor]
-    public BookListingGetDto(int bookListingId, string condition, string purchaseType, string? price, int userId, string isbn)
+    public BookListingGetDto(int bookListingId, string condition, string purchaseType, string? price, int userId, string bookISBN)
     {
         BookListingId = bookListingId;
         Condition = condition;
         PurchaseType = purchaseType;
         Price = price;
         UserId = userId;
-        ISBN = isbn;
+        BookISBN = bookISBN;
     }
 }

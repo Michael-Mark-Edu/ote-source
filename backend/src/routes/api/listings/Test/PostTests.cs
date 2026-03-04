@@ -17,17 +17,16 @@ public class PostTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "POST";
+        request.Cookies = new string[] { "__Host-Http-UserId=2", "__Host-Http-SessionToken=AA==" };
 
         request.Body =
         """
         {
-            "username": "API_USERS_POST_SimpleTest_USERNAME",
-            "emailAddress": "API_USERS_POST_SimpleTest_EMAIL",
-            "firstName": "API_USERS_POST_SimpleTest_FIRSTNAME",
-            "lastName": "API_USERS_POST_SimpleTest_LASTNAME",
-            "middleName": "API_USERS_POST_SimpleTest_MIDDLENAME",
-            "password": "API_USERS_POST_SimpleTest_PASSWORD",
-            "schoolId": 1
+            "condition": "Good",
+            "purchaseType": "Buy",
+            "price": "$19.99",
+            "userId": 2,
+            "isbn": "12345"
         }
         """;
         context.Logger.LogDebug($"POST /api/listings SimpleTest | request.Body = {request.Body}");
@@ -39,7 +38,7 @@ public class PostTests
         context.Logger.LogDebug($"POST /api/listings SimpleTest | response.Body = {response.Body}");
         Assert.Equal(200, response.StatusCode);
 
-        var entities = JsonSerializer.Deserialize<UserGetDto>(response.Body);
+        var entities = JsonSerializer.Deserialize<BookListingGetDto>(response.Body);
         Assert.NotNull(entities);
     }
 
@@ -52,16 +51,15 @@ public class PostTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "POST";
+        request.Cookies = new string[] { "__Host-Http-UserId=2", "__Host-Http-SessionToken=AA==" };
 
         request.Body =
         """
         {
-            "emailAddress": "API_USERS_POST_MissingFieldTest_EMAIL",
-            "firstName": "API_USERS_POST_MissingFieldTest_FIRSTNAME",
-            "lastName": "API_USERS_POST_MissingFieldTest_LASTNAME",
-            "middleName": "API_USERS_POST_MissingFieldTest_MIDDLENAME",
-            "password": "API_USERS_POST_MissingFieldTest_PASSWORD",
-            "schoolId": 1
+            "condition": "Good",
+            "purchaseType": "Buy",
+            "userId": 2,
+            "price": "$19.99"
         }
         """;
 
@@ -82,17 +80,16 @@ public class PostTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "POST";
+        request.Cookies = new string[] { "__Host-Http-UserId=1", "__Host-Http-SessionToken=AA==" };
 
         request.Body =
         """
         {
-            "username": "API_USERS_POST_DuplicateTest_USERNAME",
-            "emailAddress": "API_USERS_POST_DuplicateTest_EMAIL",
-            "firstName": "API_USERS_POST_DuplicateTest_FIRSTNAME",
-            "lastName": "API_USERS_POST_DuplicateTest_LASTNAME",
-            "middleName": "API_USERS_POST_DuplicateTest_MIDDLENAME",
-            "password": "API_USERS_POST_DuplicateTest_PASSWORD",
-            "schoolId": 1
+            "condition": "Good",
+            "purchaseType": "Buy",
+            "price": "$19.99",
+            "userId": 1,
+            "isbn": "12349"
         }
         """;
 
@@ -106,7 +103,7 @@ public class PostTests
         response = await function.FunctionHandler(request, context);
 
         context.Logger.LogDebug($"POST /api/listings DuplicateTest | response.Body 2 = {response.Body}");
-        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(200, response.StatusCode);
     }
 
     [Fact]
@@ -118,18 +115,17 @@ public class PostTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "POST";
+        request.Cookies = new string[] { "__Host-Http-UserId=1", "__Host-Http-SessionToken=AA==" };
 
         request.Body =
-        $$"""
+        """
         {
-            "username": "API_USERS_POST_ExtraFieldTest_USERNAME",
-            "emailAddress": "API_USERS_POST_ExtraFieldTest_EMAIL",
-            "firstName": "API_USERS_POST_ExtraFieldTest_FIRSTNAME",
-            "lastName": "API_USERS_POST_ExtraFieldTest_LASTNAME",
-            "middleName": "API_USERS_POST_ExtraFieldTest_MIDDLENAME",
-            "password": "API_USERS_POST_ExtraFieldTest_PASSWORD",
-            "createdAt": "{{DateTime.UtcNow}}",
-            "schoolId": 1
+            "condition": "Good",
+            "purchaseType": "Buy",
+            "price": "$19.99",
+            "userId": 1,
+            "isbn": "12348",
+            "location": "nowhere"
         }
         """;
 
@@ -150,18 +146,17 @@ public class PostTests
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "POST";
+        request.Cookies = new string[] { "__Host-Http-UserId=1", "__Host-Http-SessionToken=AA==" };
 
         request.Body =
         """
         {
-            "username": "API_USERS_POST_DuplicateFieldTest_USERNAME",
-            "emailAddress": "API_USERS_POST_DuplicateFieldTest_EMAIL",
-            "firstName": "API_USERS_POST_DuplicateFieldTest_FIRSTNAME",
-            "lastName": "API_USERS_POST_DuplicateFieldTest_LASTNAME",
-            "lastName": "API_USERS_POST_DuplicateFieldTest_LASTNAME",
-            "middleName": "API_USERS_POST_DuplicateFieldTest_MIDDLENAME",
-            "password": "API_USERS_POST_DuplicateFieldTest_PASSWORD",
-            "schoolId": 1
+            "condition": "Good",
+            "purchaseType": "Buy",
+            "price": "$19.99",
+            "price": "$19.99",
+            "userId": 1,
+            "isbn": "12349"
         }
         """;
         context.Logger.LogDebug($"POST /api/listings DuplicateFieldTest | request.Body = {request.Body}");
