@@ -10,19 +10,15 @@ public class BookGetDto : IGetDto<BookEntity>
     [JsonPropertyName("bookId")]
     public int BookId { get; set; }
 
-    [MaxLength(255)]
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
 
-    [MaxLength(255)]
     [JsonPropertyName("authors")]
     public string Authors { get; set; } = string.Empty;
 
-    [MaxLength(255)]
     [JsonPropertyName("publishers")]
     public string Publishers { get; set; } = string.Empty;
 
-    [MaxLength(4000)]
     [JsonPropertyName("description")]
     public string? Description { get; set; } = null;
 

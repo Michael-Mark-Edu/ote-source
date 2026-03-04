@@ -32,15 +32,17 @@ public class BookListingEntity
     public DateTime? DeletedAt { get; set; } = null;
 
     [JsonIgnore]
-    [ForeignKey("sellerId")]
+    [ForeignKey("UserId")]
     public UserEntity Seller { get; set; } = null!;
 
-    [JsonPropertyName("schoolId")]
+    [JsonPropertyName("userId")]
     public int UserId { get; set; }
 
+    // NAV Prop
     [JsonIgnore]
-    public BookEntity ISBN { get; set; } = null!;
+    public BookEntity Book { get; set; } = null!;
 
-    [JsonPropertyName("bookId")]
-    public int BookId { get; set; }
+    // FK
+    [JsonPropertyName("isbn")]
+    public int ISBN { get; set; }
 }
