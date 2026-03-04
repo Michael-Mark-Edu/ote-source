@@ -2,8 +2,18 @@ import { useState } from "react";
 import FormError from "../ui/FormError";
 import PasswordInput from "../ui/PasswordInput";
 
+type CreateAccountDto = {
+  username: string;
+  emailAddress: string;
+  firstName: string;
+  lastName: string;
+  middleName: string;
+  password: string;
+  schoolId: number;
+};
+
 type CreateAccountFormProps = {
-  onSubmit?: (email: string, username: string, password: string) => void;
+  onSubmit?: (dto: CreateAccountDto) => void;
   onBackToLogin?: () => void;
   isSubmitting?: boolean;
   serverError?: string | null;
@@ -16,16 +26,31 @@ export default function CreateAccountForm({
   serverError = null,
 }: CreateAccountFormProps) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  const [schoolId, setSchoolId] = useState<number>(36);
+
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [error, setError] = useState<string | null>(null);
 
   const emailOk = email.includes("@") && email.includes(".");
   const usernameOk = username.trim().length >= 3;
+
+  const firstOk = firstName.trim().length >= 1;
+  const lastOk = lastName.trim().length >= 1;
+
   const passwordOk = password.length >= 6;
   const passwordsMatch = password === confirmPassword;
-  const canSubmit = emailOk && usernameOk && passwordOk && passwordsMatch;
+
+  const schoolOk = Number.isFinite(schoolId) && schoolId > 0;
+
+  const canSubmit = emailOk && usernameOk && firstOk && lastOk && passwordOk && passwordsMatch && schoolOk;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,11 +61,19 @@ export default function CreateAccountForm({
     }
 
     if (!canSubmit) {
-      setError("Please enter a valid email and a password (6+ chars).");
+      setError("Please fill all required fields and password (6+ chars).");
       return;
     }
     setError(null);
-    onSubmit?.(email, username, password);;
+    onSubmit?.({
+      emailAddress: email.trim(),
+      username: username.trim(),
+      firstName: firstName.trim(),
+      middleName: middleName.trim(),
+      lastName: lastName.trim(),
+      password,
+      schoolId,
+    });
   }
 
   return (
@@ -86,6 +119,83 @@ export default function CreateAccountForm({
         />
       </div>
 
+      {/* Names */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700" htmlFor="firstName">
+            First
+          </label>
+          <input
+            id="firstName"
+            type="text"
+            autoComplete="given-name"
+            value={firstName}
+            onChange={(e) => {
+              setFirstName(e.target.value);
+              if (error) setError(null);
+            }}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            placeholder="First"
+            required
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700" htmlFor="middleName">
+            Middle (optional)
+          </label>
+          <input
+            id="middleName"
+            type="text"
+            autoComplete="additional-name"
+            value={middleName}
+            onChange={(e) => {
+              setMiddleName(e.target.value);
+              if (error) setError(null);
+            }}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Middle"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700" htmlFor="lastName">
+            Last
+          </label>
+          <input
+            id="lastName"
+            type="text"
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(e) => {
+              setLastName(e.target.value);
+              if (error) setError(null);
+            }}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Last"
+            required
+          />
+        </div>
+      </div>
+
+      {/* School */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-gray-700" htmlFor="createSchool">
+          School
+        </label>
+        <select
+          id="createSchool"
+          value={schoolId}
+          onChange={(e) => {
+            setSchoolId(Number(e.target.value));
+            if (error) setError(null);
+          }}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        >
+          <option value={36}>Oregon Tech</option>
+        </select>
+      </div>
+
       {/* Password */}
       <PasswordInput
         id="createPassword"
@@ -98,7 +208,7 @@ export default function CreateAccountForm({
         autoComplete="new-password"
       />
 
-            <PasswordInput
+      <PasswordInput
         id="confirmPassword"
         label="Confirm Password"
         value={confirmPassword}
