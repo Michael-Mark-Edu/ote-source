@@ -9,8 +9,8 @@ namespace OTE.Data.EFCore.Entities;
 public class BookEntity
 {
     [Key]
-    [JsonPropertyName("bookId")]
-    public int BookId { get; set; }
+    [JsonPropertyName("isbn")]
+    public string ISBN { get; set; } = null!;
 
     [MaxLength(255)]
     [JsonPropertyName("title")]

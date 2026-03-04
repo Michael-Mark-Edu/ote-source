@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -32,15 +31,19 @@ public class BookListingEntity
     public DateTime? DeletedAt { get; set; } = null;
 
     [JsonIgnore]
-    [ForeignKey("sellerId")]
+    [ForeignKey("SellerId")]
     public UserEntity Seller { get; set; } = null!;
+
+    [JsonPropertyName("sellerId")]
+    public int SellerId { get; set; }
 
     [JsonPropertyName("schoolId")]
     public int UserId { get; set; }
 
     [JsonIgnore]
-    public BookEntity ISBN { get; set; } = null!;
+    [ForeignKey("ISBN")]
+    public BookEntity Book { get; set; } = null!;
 
-    [JsonPropertyName("bookId")]
-    public int BookId { get; set; }
+    [JsonPropertyName("isbn")]
+    public string ISBN { get; set; } = null!;
 }
