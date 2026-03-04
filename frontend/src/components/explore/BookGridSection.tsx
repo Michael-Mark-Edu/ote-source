@@ -1,37 +1,37 @@
 import BookCard from "./BookCard";
 
-type Cols = 1 | 2 | 3 | 4 | 5 | 6;
-
-const colsToClass: Record<Cols, string> = {
-  1: "lg:grid-cols-1",
-  2: "lg:grid-cols-2",
-  3: "lg:grid-cols-3",
-  4: "lg:grid-cols-4",
-  5: "lg:grid-cols-5",
-  6: "lg:grid-cols-6",
-};
-
 export default function BookGridSection({
   backgroundClass = "bg-gray-200",
-  count = 5,
+  count = 4,
   title = "Books",
-  columns = 5,
-  heightClass = "h-[400px]",
+  heightClass = "h-auto",
+  bookHeight = "w-48",
+  startIndex = 0,
 }: {
   backgroundClass?: string;
   count?: number;
   title?: string;
-  columns?: Cols;
   heightClass?: string;
-}) {
-  const colClass = colsToClass[columns];
-
+  bookHeight?: string;
+  startIndex?: number;
+}){
   return (
-    <section className={`${heightClass} flex items-center justify-center ${backgroundClass}`}>
-      <div className={`mx-auto max-w-6xl w-full px-4 grid items-center gap-8 ${colClass}`}>
-        {Array.from({ length: count }, (_, i) => (
-          <BookCard key={i} title={`${title} ${i + 1}`} />
-        ))}
+    <section className={`${backgroundClass} ${heightClass}`}>
+      <div className="mx-auto w-full max-w-6xl px-4 py-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: count }, (_, i) => {
+            const idx = startIndex + i;
+
+            return (
+              <BookCard
+                key={idx}
+                title={`${title} ${idx + 1}`}
+                bookHeight={bookHeight}
+                listingId={String(idx + 1)}
+              />
+            );
+          })}
+        </div>
       </div>
     </section>
   );

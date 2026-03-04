@@ -73,6 +73,108 @@ namespace Data.EFCore.Migrations
                     b.ToTable("Argon2idPasswords", "public");
                 });
 
+            modelBuilder.Entity("OTE.Data.EFCore.Entities.BookEntity", b =>
+                {
+                    b.Property<string>("ISBN")
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("isbn");
+
+                    b.Property<string>("Authors")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasJsonPropertyName("authors");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasJsonPropertyName("createdAt");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasJsonPropertyName("deletedAt");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasJsonPropertyName("description");
+
+                    b.Property<DateTime?>("PublishDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasJsonPropertyName("publishDate");
+
+                    b.Property<string>("Publishers")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasJsonPropertyName("publishers");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasJsonPropertyName("title");
+
+                    b.HasKey("ISBN");
+
+                    b.ToTable("Books", "public");
+                });
+
+            modelBuilder.Entity("OTE.Data.EFCore.Entities.BookListingEntity", b =>
+                {
+                    b.Property<int>("BookListingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasJsonPropertyName("bookListingId");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BookListingId"));
+
+                    b.Property<string>("Condition")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasJsonPropertyName("condition");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasJsonPropertyName("createdAt");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasJsonPropertyName("deletedAt");
+
+                    b.Property<string>("ISBN")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("isbn");
+
+                    b.Property<string>("Price")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasJsonPropertyName("price");
+
+                    b.Property<string>("PurchaseType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasJsonPropertyName("purchaseType");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("integer")
+                        .HasJsonPropertyName("sellerId");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasJsonPropertyName("schoolId");
+
+                    b.HasKey("BookListingId");
+
+                    b.HasIndex("ISBN");
+
+                    b.HasIndex("SellerId");
+
+                    b.ToTable("BookListings", "public");
+                });
+
             modelBuilder.Entity("OTE.Data.EFCore.Entities.SchoolEntity", b =>
                 {
                     b.Property<int>("SchoolId")
@@ -220,6 +322,25 @@ namespace Data.EFCore.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OTE.Data.EFCore.Entities.BookListingEntity", b =>
+                {
+                    b.HasOne("OTE.Data.EFCore.Entities.BookEntity", "Book")
+                        .WithMany()
+                        .HasForeignKey("ISBN")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OTE.Data.EFCore.Entities.UserEntity", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("OTE.Data.EFCore.Entities.SessionTokenCacheEntity", b =>

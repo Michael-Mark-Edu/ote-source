@@ -56,6 +56,46 @@ public static partial class ApiFunctions
         return null;
     }
 
+    /// <summary>Gets the userId contained in the session token cookies.</summary>
+    /// <param name="request">The `APIGatewayHttpApiV2ProxyRequest` to read the cookies of.</param>
+    /// <returns>The userId, or a 4xx HTTP response ready to be returned.</returns>
+    public static async Task<Result<int, APIGatewayHttpApiV2ProxyResponse>> GetUserIdFromCookie(APIGatewayHttpApiV2ProxyRequest request)
+    {
+        if (request.Cookies == null)
+            return new Result<int, APIGatewayHttpApiV2ProxyResponse>(new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 401,
+                Body = $"{{\"error\":\"Cookies '__Host-Http-UserId' and '__Host-Http-SessionToken' must be specified.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            });
+
+        var sessionTokenUserIdCookie = request
+            .Cookies
+            .Where(c => c.Length >= 19 && c.Substring(0, 19) == "__Host-Http-UserId=")
+            .FirstOrDefault();
+
+        if (sessionTokenUserIdCookie == null)
+            return new Result<int, APIGatewayHttpApiV2ProxyResponse>(new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 401,
+                Body = $"{{\"error\":\"Cookie '__Host-Http-UserId' must be specified.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            });
+
+        var sessionTokenUserId = sessionTokenUserIdCookie.Substring(19);
+
+        var sessionTokenUserIdParseResult = SafeAtoi.Parse(sessionTokenUserId);
+        if (!sessionTokenUserIdParseResult.Ok)
+            return new Result<int, APIGatewayHttpApiV2ProxyResponse>(new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Could not parse '__Host-Http-UserId' into an integer.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            });
+
+        return new Result<int, APIGatewayHttpApiV2ProxyResponse>(sessionTokenUserIdParseResult.Unwrap());
+    }
+
     private static async Task<Result<SessionTokenCacheEntity, APIGatewayHttpApiV2ProxyResponse>> _validateCookies(APIGatewayHttpApiV2ProxyRequest request, OteContext oteContext)
     {
         if (request.Cookies == null)
