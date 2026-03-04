@@ -114,14 +114,17 @@ public static partial class ApiFunctions
                         }
                         break;
                     case JsonValueKind.String:
-                        if (!prop.PropertyType.IsAssignableTo(typeof(string)))
+                        if (prop.PropertyType.IsAssignableTo(typeof(string)))
+                            prop.SetValue(target, e.Value.GetString());
+                        else if (prop.PropertyType.IsAssignableTo(typeof(DateTime)) || prop.PropertyType.IsAssignableFrom(typeof(DateTime)))
+                            prop.SetValue(target, e.Value.GetDateTime());
+                        else
                             return Result<TTarget, APIGatewayHttpApiV2ProxyResponse>.NewError(new APIGatewayHttpApiV2ProxyResponse
                             {
                                 StatusCode = 400,
-                                Body = $"{{\"error\":\"JSON field {e.Name} must be a string.\"}}",
+                                Body = $"{{\"error\":\"JSON field {e.Name} must be a string or date.\"}}",
                                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
                             });
-                        prop.SetValue(target, e.Value.GetString());
                         break;
                     case JsonValueKind.True:
                     case JsonValueKind.False:
