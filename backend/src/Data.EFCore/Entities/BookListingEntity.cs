@@ -43,5 +43,5 @@ public class BookListingEntity
 
     // FK
     [JsonPropertyName("isbn")]
-    public int ISBN { get; set; }
+    public string ISBN { get; set; } = null!;
 }

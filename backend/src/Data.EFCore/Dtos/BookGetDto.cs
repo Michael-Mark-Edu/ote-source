@@ -7,8 +7,8 @@ namespace OTE.Data.EFCore.Dtos;
 /// <summary>`IGetDto` for returning books for a GET request.</summary>
 public class BookGetDto : IGetDto<BookEntity>
 {
-    [JsonPropertyName("bookId")]
-    public int BookId { get; set; }
+    [JsonPropertyName("isbn")]
+    public string ISBN { get; set; } = null!;
 
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
@@ -27,22 +27,22 @@ public class BookGetDto : IGetDto<BookEntity>
 
     public BookGetDto(BookEntity bookEntity)
     {
-        BookId = bookEntity.BookId;
+        ISBN = bookEntity.ISBN;
         Title = bookEntity.Title;
         Authors = bookEntity.Authors;
         Publishers = bookEntity.Publishers;
-        PublishDate = bookEntity.PublishDate; 
+        PublishDate = bookEntity.PublishDate;
         Description = bookEntity.Description;
     }
 
     [JsonConstructor]
-    public BookGetDto(int bookId, string title, string authors, string publishers, DateTime? publishDate, string? description)
+    public BookGetDto(string isbn, string title, string authors, string publishers, DateTime? publishDate, string? description)
     {
-        BookId = bookId;
+        ISBN = isbn;
         Title = title;
         Authors = authors;
-        Publishers= publishers;
+        Publishers = publishers;
         PublishDate = publishDate;
-        Description= description;
+        Description = description;
     }
 }
