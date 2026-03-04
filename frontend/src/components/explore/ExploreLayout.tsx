@@ -1,19 +1,35 @@
 import { useSearch } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ExploreFiltersSidebar from "./ExploreFiltersSidebar";
 import ListingCard from "../listings/ListingCard";
+import type { Listing } from "../../types/listing";
 
 export default function ExploreLayout() {
   const { q } = useSearch({ from: "/explore" });
 
-  const initialListings = Array.from({ length: 30 }, (_, i) => ({
-    id: String(i + 1),
-    title: `The art of mad max fury road ${i + 1}`,
-    price: 20,
-    imageUrl: null
-  }));
+  const [listings, setListings] = useState<Listing[]>([]);
 
-  const [listings, setListings] = useState(initialListings);
+  useEffect(() => {
+  const stored = JSON.parse(localStorage.getItem("listings") || "[]");
+
+  const formatted: Listing[] = stored.map((l: unknown) => {
+    const listing = l as {
+      id: number | string;
+      title: string;
+      price: number;
+      image?: string | null;
+    };
+
+    return {
+      id: String(listing.id),
+      title: listing.title,
+      price: listing.price,
+      imageUrl: listing.image ?? null,
+    };
+  });
+
+  setListings(formatted);
+  }, []);
 
   function handleHide(id: string) {
     setListings((prev) => prev.filter((l) => l.id !== id));

@@ -1,4 +1,5 @@
 import { Link, useParams } from "@tanstack/react-router";
+import type { Listing } from "../../types/listing";
 
 type ListingDetails = {
   id: string;
@@ -17,21 +18,26 @@ type ListingDetails = {
 };
 
 // Mock getListing API
-function getMockListing(listingId: string): ListingDetails {
+function getMockListing(listingId: string): ListingDetails | null {
+  const stored = JSON.parse(localStorage.getItem("listings") || "[]");
+
+  const listing = stored.find((l: Listing) => String(l.id) === listingId);
+  if (!listing) return null;
+
   return {
-    id: listingId,
-    title: `Book Title ${listingId}`,
-    author: "Author Name",
-    isbn: "978-0-000000-00-0",
-    edition: "3rd",
-    condition: "Good",
-    price: 35,
-    school: "Oregon Tech",
-    course: "CST 211",
-    description:
-      "Placeholder description. Replace with real data from the backend.",
-    sellerName: "dummy_user",
-    createdAt: "2026-02-15",
+    id: String(listing.id),
+    title: listing.title,
+    author: listing.author,
+    isbn: listing.isbn,
+    edition: listing.edition,
+    condition: listing.condition,
+    price: listing.price,
+    school: listing.campus,
+    course: `${listing.subject} ${listing.courseNumber}`,
+    description: listing.description,
+    imageUrl: listing.image,
+    sellerName: listing.sellerName,
+    createdAt: listing.createdAt
   };
 }
 
@@ -40,6 +46,24 @@ export default function ListingPage() {
 
   // TODO: replace with real API call + loading states
   const listing = getMockListing(String(listingId));
+
+  if (!listing) {
+  return (
+    <div className="min-h-screen bg-amber-50">
+      <div className="mx-auto max-w-3xl px-4 py-8">
+        <Link to="/explore" className="text-sm text-gray-600 hover:text-gray-900">
+          ← Back to Explore
+        </Link>
+        <div className="mt-6 rounded-xl border bg-white p-6">
+          <h1 className="text-xl font-semibold">Listing not found</h1>
+          <p className="mt-2 text-sm text-gray-700">
+            This listing may have been removed, or your mock data hasn’t been seeded yet.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-amber-50">
@@ -54,8 +78,12 @@ export default function ListingPage() {
           {/* Image/Card */}
           <div className="lg:col-span-1">
             <div className="rounded-2xl border bg-white p-4 shadow-sm">
-              <div className="aspect-9/16 w-full rounded-xl bg-gray-200 grid place-items-center">
-                <span className="text-gray-600 text-sm">Cover Image</span>
+              <div className="aspect-9/16 w-full rounded-xl bg-gray-200 grid place-items-center overflow-hidden">
+                {listing.imageUrl ? (
+                  <img src={listing.imageUrl} alt={listing.title} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-gray-600 text-sm">Cover Image</span>
+                )}
               </div>
 
               <div className="mt-4 space-y-2">

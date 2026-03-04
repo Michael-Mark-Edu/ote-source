@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { PhotoIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
 import { useMemo, useState } from "react";
+import { useAuth } from '../components/auth/useAuth';
 
 export const Route = createFileRoute("/user_upload")({
   component: UploadPage,
@@ -53,12 +54,33 @@ function UploadPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function onSubmit(e: React.FormEvent) {
+  const { user } = useAuth();
+
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    const sellerName = user?.username ?? "demo_user";
+    const createdAt = new Date().toISOString().slice(0, 10);
+
+    const newListing = {
+        id: Date.now(),
+        ...form,
+        sellerName,
+        createdAt,
+        image: previewUrl,
+    };
+
+    const existingListings = JSON.parse(localStorage.getItem("listings") || "[]");
+
+    existingListings.push(newListing);
+
+    localStorage.setItem("listings", JSON.stringify(existingListings));
+
+    setTimeout(() => {
+    navigate({ to: "/explore" });
+  }, 1500);
+
     // TODO: validate form and files before submitting
-    console.log("Upload form submit:", form);
-    console.log("Selected files:", files);
 
     // TODO: implement API calls to backend to create listing and upload images:
     // - POST /api/listings (create)
@@ -304,7 +326,8 @@ function UploadPage() {
                                 rows={3}
                                 placeholder="Write a description about the book..."
                                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
-                                defaultValue={''}
+                                value={form.description}
+                                onChange={(e) => setField("description", e.target.value)}
                                 />
                             </div>
                         </div>
@@ -322,7 +345,8 @@ function UploadPage() {
                                 rows={3}
                                 placeholder="Here you can write about what you would want to trade it for or if you are just looking to get it off your hands..."
                                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
-                                defaultValue={''}
+                                value={form.trade}
+                                onChange={(e) => setField("trade", e.target.value)}
                                 />
                             </div>
                         </div>
