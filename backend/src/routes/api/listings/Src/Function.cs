@@ -58,23 +58,18 @@ public class Function
     {
         using var oteContext = new OteContext();
 
-        var validateCookieResult = await ApiFunctions.ValidateCookiesAdminAction(request, oteContext);
-
-        if (validateCookieResult != null)
-            return validateCookieResult;
-
-        var users = await oteContext
-            .Users
+        var listings = await oteContext
+            .BookListings
             .Where(e => e.DeletedAt == null)
             .ToListAsync();
 
-        var userGetDtos = users.Select((e, i) => new UserGetDto(e));
-        var usersJson = JsonSerializer.Serialize(userGetDtos);
+        var listingGetDtos = listings.Select((e, i) => new BookListingGetDto(e));
+        var listingsJson = JsonSerializer.Serialize(listingGetDtos);
 
         return new APIGatewayHttpApiV2ProxyResponse
         {
             StatusCode = 200,
-            Body = usersJson,
+            Body = listingsJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }
@@ -83,19 +78,15 @@ public class Function
     {
         using var oteContext = new OteContext();
 
-        var deserializeResult = ApiFunctions.DeserializeJsonEntity<UserPostDto>(request, context.Logger);
+        var deserializeResult = ApiFunctions.DeserializeJsonEntity<BookListingPostDto>(request, context.Logger);
         if (!deserializeResult.Ok)
             return deserializeResult.UnwrapError();
 
-        var userPostDtoOutput = deserializeResult.Unwrap().Map();
+        var listingPostDtoOutput = deserializeResult.Unwrap().Map();
 
-        await oteContext
-            .Argon2idPasswords
-            .AddAsync(userPostDtoOutput.Argon2idPasswordEntity);
-
-        var insertedUserEntry = await oteContext
-            .Users
-            .AddAsync(userPostDtoOutput.UserEntity);
+        var insertedListingEntry = await oteContext
+            .BookListings
+            .AddAsync(listingPostDtoOutput.BookListingEntity);
 
         try
         {
@@ -114,14 +105,14 @@ public class Function
             throw;
         }
 
-        var insertedUser = insertedUserEntry.Entity;
-        var userGetDto = new UserGetDto(insertedUser);
-        var userGetDtoJson = JsonSerializer.Serialize(userGetDto);
+        var insertedListing = insertedListingEntry.Entity;
+        var listingGetDto = new BookListingGetDto(insertedListing);
+        var listingGetDtoJson = JsonSerializer.Serialize(listingGetDto);
 
         return new APIGatewayHttpApiV2ProxyResponse
         {
             StatusCode = 200,
-            Body = userGetDtoJson,
+            Body = listingGetDtoJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }

@@ -19,47 +19,35 @@ public class Function
     [LambdaFunction]
     public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
-        string userId;
+        string listingId;
         try
         {
-            userId = request.PathParameters["userId"];
+            listingId = request.PathParameters["listingId"];
         }
         catch (NullReferenceException)
         {
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = $"{{\"error\":\"userId expected but not given.\"}}",
+                Body = $"{{\"error\":\"listingId expected but not given.\"}}",
                 Headers = new Dictionary<string, string> {
                     { "Content-Type", "application/json" }
                 }
             };
         }
 
-        int parsedId;
+        var parsedIdResult = SafeAtoi.Parse(listingId);
+        if (!parsedIdResult.Ok)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"{parsedIdResult.UnwrapError()}\"}}",
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "application/json" },
+                }
+            };
 
-        if (userId == "self")
-        {
-            var sessionTokenUserIdResult = await ApiFunctions.GetUserIdFromCookie(request);
-            if (!sessionTokenUserIdResult.Ok)
-                return sessionTokenUserIdResult.UnwrapError();
-            parsedId = sessionTokenUserIdResult.Unwrap();
-        }
-        else
-        {
-            var parsedIdResult = SafeAtoi.Parse(userId);
-            if (!parsedIdResult.Ok)
-                return new APIGatewayHttpApiV2ProxyResponse
-                {
-                    StatusCode = 400,
-                    Body = $"{{\"error\":\"{parsedIdResult.UnwrapError()}\"}}",
-                    Headers = new Dictionary<string, string> {
-                        { "Content-Type", "application/json" },
-                    }
-                };
-
-            parsedId = parsedIdResult.Unwrap();
-        }
+        int parsedId = parsedIdResult.Unwrap();
 
         string method;
         try
@@ -99,47 +87,43 @@ public class Function
         }
     }
 
-    private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
+    private async Task<APIGatewayHttpApiV2ProxyResponse> get(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int listingId)
     {
         using var oteContext = new OteContext();
 
-        var foundUser = await oteContext
-            .Users
-            .Where(e => e.UserId == userId)
+        var foundListing = await oteContext
+            .BookListings
+            .Where(e => e.BookListingId == listingId)
             .Where(e => e.DeletedAt == null)
             .FirstOrDefaultAsync();
 
-        if (foundUser == null)
+        if (foundListing == null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
-                Body = $"{{\"error\":\"User with userId '{userId}' does not exist.\"}}",
+                Body = $"{{\"error\":\"Listing with listingId '{listingId}' does not exist.\"}}",
                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
 
-        var userGetDto = new UserGetDto(foundUser);
-        var userGetDtoJson = JsonSerializer.Serialize(userGetDto);
+        var listingGetDto = new BookListingGetDto(foundListing);
+        var listingGetDtoJson = JsonSerializer.Serialize(listingGetDto);
 
         return new APIGatewayHttpApiV2ProxyResponse
         {
             StatusCode = 200,
-            Body = userGetDtoJson,
+            Body = listingGetDtoJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }
 
-    private async Task<APIGatewayHttpApiV2ProxyResponse> patch(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
+    private async Task<APIGatewayHttpApiV2ProxyResponse> patch(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int listingId)
     {
         using var oteContext = new OteContext();
 
-        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, userId);
-
-        if (validateCookieResult != null)
-            return validateCookieResult;
-
-        var foundUser = await oteContext
-            .Users
-            .Where(e => e.UserId == userId)
+        var foundListing = await oteContext
+            .BookListings
+            .Include(e => e.Seller)
+            .Where(e => e.BookListingId == listingId)
             .Where(e => e.DeletedAt == null)
             .FirstOrDefaultAsync();
 
@@ -149,103 +133,108 @@ public class Function
 
         var dsz = deserializeResult.Unwrap();
 
-        if (foundUser == null)
+        if (foundListing == null)
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
-                Body = $"{{\"error\":\"User with userId '{userId}' does not exist.\"}}",
+                Body = $"{{\"error\":\"Listing with listingId '{listingId}' does not exist.\"}}",
                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
 
-        if (dsz.ContainsKey("username") && dsz["username"].ValueKind != JsonValueKind.String)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'username' to be {JsonValueKind.String}, instead got {dsz["username"].ValueKind}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-        if (dsz.ContainsKey("emailAddress") && dsz["emailAddress"].ValueKind != JsonValueKind.String)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'emailAddress' to be {JsonValueKind.String}, instead got {dsz["emailAddress"].ValueKind}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-        if (dsz.ContainsKey("firstName") && dsz["firstName"].ValueKind != JsonValueKind.String && dsz["firstName"].ValueKind == JsonValueKind.Null)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'firstName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["firstName"].ValueKind}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-        if (dsz.ContainsKey("lastName") && dsz["lastName"].ValueKind != JsonValueKind.String && dsz["lastName"].ValueKind != JsonValueKind.Null)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'lastName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["lastName"].ValueKind}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-        if (dsz.ContainsKey("middleName") && dsz["middleName"].ValueKind != JsonValueKind.String && dsz["middleName"].ValueKind != JsonValueKind.Null)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'middleName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["middleName"].ValueKind}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-        if (dsz.ContainsKey("password") && dsz["password"].ValueKind != JsonValueKind.String)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'password' to be {JsonValueKind.String}, instead got {dsz["password"].ValueKind}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-        if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind != JsonValueKind.Number)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'schoolId' to be {JsonValueKind.Number}, instead got {dsz["schoolId"].ValueKind}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
+        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, foundListing.UserId);
 
-        if (dsz.ContainsKey("username") && dsz["username"].ValueKind == JsonValueKind.String)
-        {
-            foundUser.Username = dsz["username"]!.GetString()!;
-            dsz.Remove("username");
-        }
-        if (dsz.ContainsKey("emailAddress") && dsz["emailAddress"].ValueKind == JsonValueKind.String)
-        {
-            foundUser.EmailAddress = dsz["emailAddress"]!.GetString()!;
-            dsz.Remove("emailAddress");
-        }
-        if (dsz.ContainsKey("firstName") && (dsz["firstName"].ValueKind == JsonValueKind.String || dsz["firstName"].ValueKind == JsonValueKind.Null))
-        {
-            foundUser.FirstName = dsz["firstName"]!.GetString();
-            dsz.Remove("firstName");
-        }
-        if (dsz.ContainsKey("lastName") && (dsz["lastName"].ValueKind == JsonValueKind.String || dsz["lastName"].ValueKind == JsonValueKind.Null))
-        {
-            foundUser.LastName = dsz["lastName"]!.GetString();
-            dsz.Remove("lastName");
-        }
-        if (dsz.ContainsKey("middleName") && (dsz["middleName"].ValueKind == JsonValueKind.String || dsz["middleName"].ValueKind == JsonValueKind.Null))
-        {
-            foundUser.MiddleName = dsz["middleName"]!.GetString();
-            dsz.Remove("middleName");
-        }
+        if (validateCookieResult != null)
+            return validateCookieResult;
 
-        int schoolId = 0;
-        if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number && !dsz["schoolId"].TryGetInt32(out schoolId))
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Expected 'schoolId' to be a signed 32 bit integer, instead got a different {JsonValueKind.Number}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-        else if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number)
-        {
-            foundUser.SchoolId = schoolId;
-            dsz.Remove("middleName");
-        }
+        // if (dsz.ContainsKey("username") && dsz["username"].ValueKind != JsonValueKind.String)
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'username' to be {JsonValueKind.String}, instead got {dsz["username"].ValueKind}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        // if (dsz.ContainsKey("emailAddress") && dsz["emailAddress"].ValueKind != JsonValueKind.String)
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'emailAddress' to be {JsonValueKind.String}, instead got {dsz["emailAddress"].ValueKind}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        // if (dsz.ContainsKey("firstName") && dsz["firstName"].ValueKind != JsonValueKind.String && dsz["firstName"].ValueKind == JsonValueKind.Null)
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'firstName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["firstName"].ValueKind}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        // if (dsz.ContainsKey("lastName") && dsz["lastName"].ValueKind != JsonValueKind.String && dsz["lastName"].ValueKind != JsonValueKind.Null)
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'lastName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["lastName"].ValueKind}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        // if (dsz.ContainsKey("middleName") && dsz["middleName"].ValueKind != JsonValueKind.String && dsz["middleName"].ValueKind != JsonValueKind.Null)
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'middleName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["middleName"].ValueKind}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        // if (dsz.ContainsKey("password") && dsz["password"].ValueKind != JsonValueKind.String)
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'password' to be {JsonValueKind.String}, instead got {dsz["password"].ValueKind}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        // if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind != JsonValueKind.Number)
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'schoolId' to be {JsonValueKind.Number}, instead got {dsz["schoolId"].ValueKind}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        //
+        // if (dsz.ContainsKey("username") && dsz["username"].ValueKind == JsonValueKind.String)
+        // {
+        //     foundUser.Username = dsz["username"]!.GetString()!;
+        //     dsz.Remove("username");
+        // }
+        // if (dsz.ContainsKey("emailAddress") && dsz["emailAddress"].ValueKind == JsonValueKind.String)
+        // {
+        //     foundUser.EmailAddress = dsz["emailAddress"]!.GetString()!;
+        //     dsz.Remove("emailAddress");
+        // }
+        // if (dsz.ContainsKey("firstName") && (dsz["firstName"].ValueKind == JsonValueKind.String || dsz["firstName"].ValueKind == JsonValueKind.Null))
+        // {
+        //     foundUser.FirstName = dsz["firstName"]!.GetString();
+        //     dsz.Remove("firstName");
+        // }
+        // if (dsz.ContainsKey("lastName") && (dsz["lastName"].ValueKind == JsonValueKind.String || dsz["lastName"].ValueKind == JsonValueKind.Null))
+        // {
+        //     foundUser.LastName = dsz["lastName"]!.GetString();
+        //     dsz.Remove("lastName");
+        // }
+        // if (dsz.ContainsKey("middleName") && (dsz["middleName"].ValueKind == JsonValueKind.String || dsz["middleName"].ValueKind == JsonValueKind.Null))
+        // {
+        //     foundUser.MiddleName = dsz["middleName"]!.GetString();
+        //     dsz.Remove("middleName");
+        // }
+        //
+        // int schoolId = 0;
+        // if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number && !dsz["schoolId"].TryGetInt32(out schoolId))
+        //     return new APIGatewayHttpApiV2ProxyResponse
+        //     {
+        //         StatusCode = 400,
+        //         Body = $"{{\"error\":\"Expected 'schoolId' to be a signed 32 bit integer, instead got a different {JsonValueKind.Number}.\"}}",
+        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+        //     };
+        // else if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number)
+        // {
+        //     foundUser.SchoolId = schoolId;
+        //     dsz.Remove("middleName");
+        // }
 
         if (dsz.Count > 0)
             return new APIGatewayHttpApiV2ProxyResponse
@@ -255,9 +244,9 @@ public class Function
                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
 
-        var updatedUserEntry = oteContext
-            .Users
-            .Update(foundUser);
+        var updatedListingEntry = oteContext
+            .BookListings
+            .Update(foundListing);
 
         try
         {
@@ -276,66 +265,47 @@ public class Function
             throw;
         }
 
-        var updatedUser = updatedUserEntry.Entity;
-        var userGetDto = new UserGetDto(updatedUser);
-        var userGetDtoJson = JsonSerializer.Serialize(userGetDto);
+        var updatedListing = updatedListingEntry.Entity;
+        var listingGetDto = new BookListingGetDto(updatedListing);
+        var listingGetDtoJson = JsonSerializer.Serialize(listingGetDto);
 
         return new APIGatewayHttpApiV2ProxyResponse
         {
             StatusCode = 200,
-            Body = userGetDtoJson,
+            Body = listingGetDtoJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }
 
-    private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int userId)
+    private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int listingId)
     {
         using var oteContext = new OteContext();
 
-        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, userId);
+        var foundListing = await oteContext
+            .BookListings
+            .Include(e => e.Seller)
+            .Where(e => e.BookListingId == listingId)
+            .Where(e => e.DeletedAt == null)
+            .FirstOrDefaultAsync();
+
+        if (foundListing == null)
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 404,
+                Body = $"{{\"error\":\"Listing with listingId '{listingId}' does not exist.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+
+        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, foundListing.UserId);
 
         if (validateCookieResult != null)
             return validateCookieResult;
 
-        var foundUser = await oteContext
-            .Users
-            .Where(e => e.UserId == userId)
-            .Where(e => e.DeletedAt == null)
-            .FirstOrDefaultAsync();
+        foundListing.DeletedAt = DateTime.UtcNow;
 
-        if (foundUser == null)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 404,
-                Body = $"{{\"error\":\"User with userId '{userId}' does not exist.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-
-        foundUser.DeletedAt = DateTime.UtcNow;
-
-        var updatedUserEntry = oteContext
-            .Users
-            .Update(foundUser);
-
-        var foundPasswords = await oteContext
-            .Argon2idPasswords
-            .Where(e => e.UserId == userId)
-            .ToListAsync();
-
-        foreach (var password in foundPasswords)
-            oteContext
-                .Argon2idPasswords
-                .Remove(password);
-
-        var foundSessionTokens = await oteContext
-            .SessionTokens
-            .Where(e => e.UserId == userId)
-            .ToListAsync();
-
-        foreach (var token in foundSessionTokens)
-            oteContext
-                .SessionTokens
-                .Remove(token);
+        var updatedListingEntry = oteContext
+            .BookListings
+            .Update(foundListing);
 
         try
         {
