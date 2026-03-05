@@ -1,7 +1,12 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { PhotoIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
-import { useMemo, useState } from "react";
+import { useMemo, useState, useContext } from "react";
+import { AuthContext } from '../components/auth/AuthContext';
+import { getBookByIsbn, createBook } from "../api/books";
+import type { BookListingPostDto } from "../api/listings";
+import type { BookPostDto } from "../api/books";
+
 
 export const Route = createFileRoute("/user_upload")({
   component: UploadPage,
@@ -53,18 +58,115 @@ function UploadPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const auth = useContext(AuthContext);
 
-    // TODO: validate form and files before submitting
-    console.log("Upload form submit:", form);
-    console.log("Selected files:", files);
+  async function onSubmit(e: React.FormEvent) {
+  e.preventDefault();
 
-    // TODO: implement API calls to backend to create listing and upload images:
-    // - POST /api/listings (create)
-    // - POST /api/listings/{id}/images
-    // - navigate to /listings/$listingId
+  if (!auth?.user) {
+    alert("You must be logged in to create a listing.");
+    return;
   }
+
+  const userId = Number(auth.user.id);
+  if (!Number.isFinite(userId) || userId <= 0) {
+    alert("Invalid user id. Please sign out and sign in again.");
+    return;
+  }
+
+  if (!form.isbn.trim()) {
+    alert("ISBN is required.");
+    return;
+  }
+
+  try {
+    // Verify book exists by ISBN. If not, create it.
+    const existingBook = await getBookByIsbn(form.isbn.trim());
+
+    if (!existingBook) {
+      if (!form.title.trim() || !form.author.trim()) {
+        alert("Title and Author are required to create a new book record.");
+        return;
+      }
+
+      const bookDto: BookPostDto = {
+        isbn: form.isbn.trim(),
+        title: form.title.trim(),
+        authors: form.author.trim(),
+        publishers: "Unknown",  // TODO: add a publishers field to form later
+        description: form.description.trim() ? form.description.trim() : null,
+        publishDate:
+          form.publishingYear === ""
+            ? null
+            : `${form.publishingYear}-01-01T00:00:00Z`,
+      };
+
+      await createBook(bookDto);
+    }
+
+    // Create the listing
+    const dto: BookListingPostDto = {
+      condition: form.condition,
+      purchaseType: form.trade.trim().length ? "Trade" : "Sell",
+      price: form.price === "" ? null : String(form.price),
+      userId,
+      isbn: form.isbn.trim(),
+    };
+
+    const res = await fetch("/api/listings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(dto),
+    });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(msg || "Failed to create listing");
+    }
+
+    const created = await res.json();
+    const listingId = created.bookListingId;
+
+    if (!listingId) {
+      throw new Error("Create listing succeeded but response missing bookListingId");
+    }
+
+    // Upload image
+    if (files.length > 0) {
+        try {
+            const formData = new FormData();
+            files.forEach((file) => formData.append("images", file));
+
+            const imgRes = await fetch(`/api/listings/${listingId}/images`, {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+            });
+
+            if (!imgRes.ok) {
+            const msg = await imgRes.text();
+            console.warn("Image upload failed:", imgRes.status, msg);
+
+            if (imgRes.status !== 405) {
+                throw new Error(msg || "Image upload failed");
+            }
+            }
+        } catch (e) {
+            console.warn("Image upload exception (continuing):", e);
+        }
+    }
+
+    // Navigate to listing page
+    navigate({
+      to: "/listings/$listingId",
+      params: { listingId: String(listingId) },
+    });
+  } catch (err) {
+    console.error(err);
+    alert(err instanceof Error ? err.message : "Failed to create listing");
+  }
+}
 
   return (
         <main className="flex flex-wrap justify-center-safe items-center-safe bg-white">
@@ -304,7 +406,8 @@ function UploadPage() {
                                 rows={3}
                                 placeholder="Write a description about the book..."
                                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
-                                defaultValue={''}
+                                value={form.description}
+                                onChange={(e) => setField("description", e.target.value)}
                                 />
                             </div>
                         </div>
@@ -322,7 +425,8 @@ function UploadPage() {
                                 rows={3}
                                 placeholder="Here you can write about what you would want to trade it for or if you are just looking to get it off your hands..."
                                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
-                                defaultValue={''}
+                                value={form.trade}
+                                onChange={(e) => setField("trade", e.target.value)}
                                 />
                             </div>
                         </div>
