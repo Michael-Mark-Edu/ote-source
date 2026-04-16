@@ -33,7 +33,7 @@ public class CourseEntity
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [JsonPropertyName("deletedAt")]
-    public DateTime? DeletedAt { get; set; } = null;
+    public DateTime? DeletedAt { get; set; }
 
     [JsonIgnore]
     [ForeignKey("SchoolId")]

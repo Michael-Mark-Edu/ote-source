@@ -5,57 +5,37 @@ using System.Text.Json.Serialization;
 
 namespace OTE.Data.EFCore.Dtos;
 
-/// <summary>Output type for `BookPostDto`.</summary>
-public class CoursePostDtoOutput
+/// <summary>Output type for `CourseBookPostDto`.</summary>
+public class CourseBookPostDtoOutput
 {
-    public required CourseEntity CourseEntity { get; set; }
+    public required CourseBookEntity CourseBookEntity { get; set; }
 }
 
 /// <summary>`IPostDto` for inserting from a POST request.</summary>
-public class CoursePostDto : IPostDto<CoursePostDtoOutput>
+public class CourseBookPostDto : IPostDto<CourseBookPostDtoOutput>
 {
+    [JsonPropertyName("courseId")]
+    public int CourseBookId { get; set; }
+
     [JsonPropertyName("courseId")]
     public int CourseId { get; set; }
 
-    [MaxLength(255)]
-    [JsonPropertyName("courseTitle")]
-    public string CourseTitle { get; set; } = string.Empty;
+    [JsonPropertyName("bookId")]
+    public int BookId { get; set; }
 
-    [MaxLength(255)]
-    [JsonPropertyName("subject")]
-    public string Subject { get; set; } = string.Empty;
 
-    [MaxLength(4)]
-    [JsonPropertyName("subjectAcronym")]
-    public string SubjectAcronym { get; set; } = string.Empty;
-
-    // Level (100-199, 200-299, 300-399, 400-499)
-    [MaxLength(3)]
-    [JsonPropertyName("level")]
-    public string Level { get; set; } = string.Empty;
-
-    [JsonIgnore]
-    [ForeignKey("SchoolId")]
-    public SchoolEntity School { get; set; } = null!;
-
-    [JsonPropertyName("schoolId")]
-    public int SchoolId { get; set; }
-
-    public CoursePostDtoOutput Map()
+    public CourseBookPostDtoOutput Map()
     {
-        var courseEntity = new CourseEntity
+        var courseBookEntity = new CourseBookEntity
         {
+            CourseBookId = 0,
             CourseId = 0,
-            CourseTitle = CourseTitle,
-            Subject = Subject,
-            SubjectAcronym = SubjectAcronym,
-            Level = Level,
-            SchoolId = SchoolId
+            BookId = 0
         };
 
-        return new CoursePostDtoOutput
+        return new CourseBookPostDtoOutput
         {
-            CourseEntity = courseEntity
+            CourseBookEntity = courseBookEntity
         };
     }
 }

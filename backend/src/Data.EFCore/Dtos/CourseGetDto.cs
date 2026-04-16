@@ -14,30 +14,26 @@ public class CourseGetDto : IGetDto<CourseEntity>
 
     [MaxLength(255)]
     [JsonPropertyName("courseTitle")]
-    public string? CourseTitle { get; set; } = string.Empty;
+    public string? CourseTitle { get; set; }
 
     [MaxLength(255)]
     [JsonPropertyName("subject")]
-    public string? Subject { get; set; } = string.Empty;
+    public string? Subject { get; set; }
 
     [MaxLength(4)]
     [JsonPropertyName("subjectAcronym")]
-    public string? SubjectAcronym { get; set; } = string.Empty;
+    public string? SubjectAcronym { get; set; }
 
     // Level (100-199, 200-299, 300-399, 400-499)
     [MaxLength(3)]
     [JsonPropertyName("level")]
-    public string? Level { get; set; } = string.Empty;
+    public string? Level { get; set; }
 
     [JsonPropertyName("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [JsonPropertyName("deletedAt")]
-    public DateTime? DeletedAt { get; set; } = null;
-
-    [JsonIgnore]
-    [ForeignKey("SchoolId")]
-    public SchoolEntity School { get; set; } = null!;
+    public DateTime? DeletedAt { get; set; }
 
     [JsonPropertyName("schoolId")]
     public int SchoolId { get; set; }

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace OTE.Data.EFCore.Dtos;
 
-/// <summary>Output type for `BookPostDto`.</summary>
+/// <summary>Output type for `CoursePostDto`.</summary>
 public class CoursePostDtoOutput
 {
     public required CourseEntity CourseEntity { get; set; }
@@ -33,10 +33,6 @@ public class CoursePostDto : IPostDto<CoursePostDtoOutput>
     [MaxLength(3)]
     [JsonPropertyName("level")]
     public string Level { get; set; } = string.Empty;
-
-    [JsonIgnore]
-    [ForeignKey("SchoolId")]
-    public SchoolEntity School { get; set; } = null!;
 
     [JsonPropertyName("schoolId")]
     public int SchoolId { get; set; }
