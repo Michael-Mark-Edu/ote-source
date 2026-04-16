@@ -38,6 +38,10 @@ public class SchoolPostDto : IPostDto<SchoolPostDtoOutput>
         var schoolEntity = new SchoolEntity
         {
             SchoolId = 0,
+            Name = Name,
+            Acronym = Acronym,
+            State = State,
+            City = City
 
         };
 
