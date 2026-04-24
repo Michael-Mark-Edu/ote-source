@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 // hypothetical public profile data model from the backend
 type PublicProfile = {
   id: number
@@ -11,7 +13,7 @@ type PublicProfile = {
   reviewCount: number
 }
 
-// user review model of what a review looks like on a users public profile.
+// user review model of what a review looks like on a public profile.
 type UserReview = {
   id: number
   reviewerDisplayName: string
@@ -48,7 +50,7 @@ const mockReviews: UserReview[] = [
     rating: 4,
     comment: 'Easy to communicate with and quick meetup.',
     createdAt: '2026-04-12T14:15:00Z',
-  }
+  },
 ]
 
 // converts backend dateStrings into readable date format
@@ -63,7 +65,7 @@ type StarRatingProps = {
   size?: 'sm' | 'md' | 'lg'
 }
 
-//  star rating display
+// star rating display
 function StarRating({ rating, maxRating = 5, size = 'md' }: StarRatingProps) {
   const roundedRating = Math.round(rating)
 
@@ -84,7 +86,7 @@ function StarRating({ rating, maxRating = 5, size = 'md' }: StarRatingProps) {
 
         return (
           <span key={starNumber} aria-hidden="true">
-            {isFilled ? '★' : '☆'} 
+            {isFilled ? '★' : '☆'}
           </span>
         )
       })}
@@ -93,10 +95,45 @@ function StarRating({ rating, maxRating = 5, size = 'md' }: StarRatingProps) {
 }
 
 export default function ProfilePage() {
+  // review local storage until backend endpoint is ready
+  const [reviews, setReviews] = useState<UserReview[]>(mockReviews)
+
+  // Stores the current review form values.
+  const [selectedRating, setSelectedRating] = useState(5)
+  const [comment, setComment] = useState('')
+
+  // calculate avg rating from the current review list
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((total, review) => total + review.rating, 0) /
+        reviews.length
+      : 0
+
+  // mock review submission
+  function handleSubmitReview(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (comment.trim().length === 0) {
+      return
+    }
+
+    const newReview: UserReview = {
+      id: Date.now(),
+      reviewerDisplayName: 'Current User',
+      rating: selectedRating,
+      comment: comment.trim(),
+      createdAt: new Date().toISOString(),
+    }
+
+    setReviews([newReview, ...reviews])
+    setSelectedRating(5)
+    setComment('')
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-12 py-8">
       <section className="mb-6 flex flex-col gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:flex-row md:items-center">
-        {/* Main public profile header. */}
+        {/* Public profile header */}
         <div>
           <h1 className="mb-2 text-3xl font-bold text-gray-900">
             {mockProfile.displayName}
@@ -115,32 +152,93 @@ export default function ProfilePage() {
               {mockProfile.listingsCount} active listings
             </span>
           </div>
-        </div>  
+        </div>
       </section>
 
-      {/* Rating summary section. */}
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      {/* Review form section */}
+      <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        
         <h2 className="mb-4 text-xl font-semibold text-gray-900">
           Seller Rating
         </h2>
 
-        <div className="flex items-center gap-4">
+        <div className="mb-4 flex items-center gap-4">
           <div className="text-5xl font-bold text-gray-900">
-            {mockProfile.averageRating.toFixed(1)}
+            {averageRating.toFixed(1)}
           </div>
 
           <div>
-            <StarRating rating={mockProfile.averageRating} size="lg" />
-            <p className="text-sm text-gray-500">
-              {mockProfile.reviewCount} reviews
-            </p>
+            <StarRating rating={averageRating} size="lg" />
+            <p className="text-sm text-gray-500">{reviews.length} reviews</p>
           </div>
         </div>
 
+        <h2 className="mb-6 text-xl font-semibold text-gray-900">
+          Leave a Review
+        </h2>
+
+        <form onSubmit={handleSubmitReview} className="space-y-4">
+          <div>
+            <label
+              htmlFor="rating"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
+              Rating
+            </label>
+
+            <select
+              id="rating"
+              value={selectedRating}
+              onChange={(event) => setSelectedRating(Number(event.target.value))}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            >
+              <option value={5}>5 - Excellent</option>
+              <option value={4}>4 - Good</option>
+              <option value={3}>3 - Okay</option>
+              <option value={2}>2 - Poor</option>
+              <option value={1}>1 - Bad</option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="comment"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
+              Comment
+            </label>
+
+            <textarea
+              id="comment"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              maxLength={500}
+              rows={4}
+              placeholder="Share your experience with this seller..."
+              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+
+            <p className="mt-1 text-right text-xs text-gray-500">
+              {comment.length}/500
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+            disabled={comment.trim().length === 0}
+          >
+            Submit Review
+          </button>
+        </form>
+      </section>
+
+      {/* Public reviews section */}
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-semibold text-gray-900">Reviews</h2>
 
         <div className="space-y-4">
-          {mockReviews.map((review) => (
+          {reviews.map((review) => (
             <article
               key={review.id}
               className="rounded-xl border border-gray-100 bg-gray-50 p-4"
