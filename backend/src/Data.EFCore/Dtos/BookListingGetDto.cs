@@ -41,10 +41,10 @@ public class BookListingGetDto : IGetDto<BookListingEntity>
     public BookListingGetDto(int bookListingId, string condition, string purchaseType, string? price, int userId, int isbn)
     {
         BookListingId = bookListingId;
-        Condition= condition;
-        PurchaseType= purchaseType;
-        Price= price;
-        UserId= userId;
+        Condition = condition;
+        PurchaseType = purchaseType;
+        Price = price;
+        UserId = userId;
         ISBN = isbn;
     }
 }

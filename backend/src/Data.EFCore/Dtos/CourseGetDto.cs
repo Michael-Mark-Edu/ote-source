@@ -49,8 +49,7 @@ public class CourseGetDto : IGetDto<CourseEntity>
     }
 
     [JsonConstructor]
-    public CourseGetDto(int courseId, string? courseTitle, string? subject, 
-        string? subjectAcronym, string? level, int schoolId)
+    public CourseGetDto(int courseId, string? courseTitle, string? subject, string? subjectAcronym, string? level, int schoolId)
     {
         CourseId = courseId;
         CourseTitle = courseTitle;

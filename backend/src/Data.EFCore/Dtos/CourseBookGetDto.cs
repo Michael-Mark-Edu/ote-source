@@ -32,6 +32,5 @@ public class CourseBookGetDto : IGetDto<CourseBookEntity>
         CourseBookId = courseBookId;
         BookId = bookId;
         CourseId = courseId;
-        
     }
 }

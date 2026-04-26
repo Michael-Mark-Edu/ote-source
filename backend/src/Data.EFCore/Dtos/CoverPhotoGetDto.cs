@@ -18,7 +18,7 @@ public class CoverPhotoGetDto : IGetDto<CoverPhotoEntity>
 
     public CoverPhotoGetDto(CoverPhotoEntity coverPhotoEntity)
     {
-        CoverPhotoId= coverPhotoEntity.CoverPhotoId;
+        CoverPhotoId = coverPhotoEntity.CoverPhotoId;
         BookId = coverPhotoEntity.BookId;
     }
 
@@ -27,6 +27,5 @@ public class CoverPhotoGetDto : IGetDto<CoverPhotoEntity>
     {
         CoverPhotoId = coverPhotoId;
         BookId = bookId;
-        
     }
 }

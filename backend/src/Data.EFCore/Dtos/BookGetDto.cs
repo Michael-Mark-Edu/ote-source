@@ -31,7 +31,7 @@ public class BookGetDto : IGetDto<BookEntity>
         Title = bookEntity.Title;
         Authors = bookEntity.Authors;
         Publishers = bookEntity.Publishers;
-        PublishDate = bookEntity.PublishDate; 
+        PublishDate = bookEntity.PublishDate;
         Description = bookEntity.Description;
     }
 
@@ -41,8 +41,8 @@ public class BookGetDto : IGetDto<BookEntity>
         BookId = bookId;
         Title = title;
         Authors = authors;
-        Publishers= publishers;
+        Publishers = publishers;
         PublishDate = publishDate;
-        Description= description;
+        Description = description;
     }
 }
