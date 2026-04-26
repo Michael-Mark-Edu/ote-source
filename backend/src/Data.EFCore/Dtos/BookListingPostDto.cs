@@ -41,7 +41,7 @@ public class BookListingPostDto : IPostDto<BookListingPostDtoOutput>
             PurchaseType = PurchaseType,
             Price = Price,
             UserId = UserId,
-            BookISBN = BookISBN
+            ISBN = ISBN
         };
 
         return new BookListingPostDtoOutput

@@ -34,7 +34,7 @@ public class BookListingGetDto : IGetDto<BookListingEntity>
         PurchaseType = bookListingEntity.PurchaseType;
         Price = bookListingEntity.Price;
         UserId = bookListingEntity.UserId;
-        BookISBN = bookListingEntity.BookISBN;
+        ISBN = bookListingEntity.ISBN;
     }
 
     [JsonConstructor]
