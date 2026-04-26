@@ -12,7 +12,7 @@ using OTE.Data.EFCore.Contexts;
 namespace Data.EFCore.Migrations
 {
     [DbContext(typeof(OteContext))]
-    [Migration("20260426222558_AllEntitiesAndDtos")]
+    [Migration("20260426223543_AllEntitiesAndDtos")]
     partial class AllEntitiesAndDtos
     {
         /// <inheritdoc />
@@ -149,8 +149,9 @@ namespace Data.EFCore.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasJsonPropertyName("deletedAt");
 
-                    b.Property<int>("ISBN")
-                        .HasColumnType("integer")
+                    b.Property<string>("ISBN")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasJsonPropertyName("isbn");
 
                     b.Property<string>("Price")

@@ -146,8 +146,9 @@ namespace Data.EFCore.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasJsonPropertyName("deletedAt");
 
-                    b.Property<int>("ISBN")
-                        .HasColumnType("integer")
+                    b.Property<string>("ISBN")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasJsonPropertyName("isbn");
 
                     b.Property<string>("Price")
