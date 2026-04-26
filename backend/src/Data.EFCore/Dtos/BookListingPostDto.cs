@@ -14,9 +14,6 @@ public class BookListingPostDtoOutput
 /// <summary>`IPostDto` for inserting user/password pairs from a POST request.</summary>
 public class BookListingPostDto : IPostDto<BookListingPostDtoOutput>
 {
-    [JsonPropertyName("bookListingId")]
-    public int BookListingId { get; set; }
-
     [MaxLength(20)]
     [JsonPropertyName("condition")]
     public string Condition { get; set; } = string.Empty;
@@ -39,12 +36,12 @@ public class BookListingPostDto : IPostDto<BookListingPostDtoOutput>
     {
         var bookListingEntity = new BookListingEntity
         {
-            BookListingId = BookListingId,
+            BookListingId = 0,
             Condition = Condition,
             PurchaseType = PurchaseType,
             Price = Price,
             UserId = UserId,
-            ISBN = ISBN
+            BookISBN = BookISBN
         };
 
         return new BookListingPostDtoOutput

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OTE.Data.EFCore.Contexts;
@@ -11,9 +12,11 @@ using OTE.Data.EFCore.Contexts;
 namespace Data.EFCore.Migrations
 {
     [DbContext(typeof(OteContext))]
-    partial class OteContextModelSnapshot : ModelSnapshot
+    [Migration("20260304115451_UpdateBooks")]
+    partial class UpdateBooks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,8 +133,7 @@ namespace Data.EFCore.Migrations
 
                     b.Property<string>("BookISBN")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasJsonPropertyName("isbn");
+                        .HasColumnType("text");
 
                     b.Property<string>("Condition")
                         .IsRequired()
@@ -146,6 +148,11 @@ namespace Data.EFCore.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasJsonPropertyName("deletedAt");
+
+                    b.Property<string>("ISBN")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("isbn");
 
                     b.Property<string>("Price")
                         .HasMaxLength(255)

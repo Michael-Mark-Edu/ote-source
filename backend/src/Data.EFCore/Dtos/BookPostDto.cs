@@ -13,6 +13,9 @@ public class BookPostDtoOutput
 /// <summary>`IPostDto` for inserting from a POST request.</summary>
 public class BookPostDto : IPostDto<BookPostDtoOutput>
 {
+    [JsonPropertyName("isbn")]
+    public string ISBN { get; set; } = null!;
+
     [MaxLength(255)]
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
@@ -36,6 +39,7 @@ public class BookPostDto : IPostDto<BookPostDtoOutput>
     {
         var bookEntity = new BookEntity
         {
+            ISBN = ISBN,
             Title = Title,
             Authors = Authors,
             Publishers = Publishers,

@@ -1,5 +1,15 @@
 import { http } from "./http";
 
+export type UserPostDto = {
+  username: string;
+  emailAddress: string;
+  firstName: string | null;
+  lastName: string | null;
+  middleName: string | null;
+  password: string;
+  schoolId: number;
+};
+
 export type LoginDto = {
   username: string;
   password: string;
@@ -29,6 +39,13 @@ export type UserPatchDto = Partial<{
   middleName: string | null;
   schoolId: number;
 }>;
+
+export async function createUser(dto: UserPostDto): Promise<UserGetDto> {
+  return http<UserGetDto>("/api/users", {
+    method: "POST",
+    body: dto,
+  });
+}
 
 export async function login(dto: LoginDto): Promise<SessionTokenGetDto> {
   return http<SessionTokenGetDto>(`/api/login`, {

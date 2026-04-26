@@ -8,7 +8,7 @@ namespace OTE.Data.EFCore.Dtos;
 public class BookGetDto : IGetDto<BookEntity>
 {
     [JsonPropertyName("isbn")]
-    public string ISBN { get; set; }
+    public string ISBN { get; set; } = null!;
 
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
