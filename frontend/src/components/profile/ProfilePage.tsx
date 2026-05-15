@@ -97,7 +97,7 @@ export default function ProfilePage() {
   // review local storage until backend endpoint is ready
   const [reviews, setReviews] = useState<UserReview[]>(mockReviews)
 
-  // Stores the current review form values.
+  // stores the current review form values.
   const [selectedRating, setSelectedRating] = useState(5)
   const [comment, setComment] = useState('')
 
