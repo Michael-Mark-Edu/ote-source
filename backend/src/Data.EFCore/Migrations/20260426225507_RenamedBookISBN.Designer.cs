@@ -131,10 +131,6 @@ namespace Data.EFCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BookListingId"));
 
-                    b.Property<string>("BookISBN")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Condition")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -171,7 +167,7 @@ namespace Data.EFCore.Migrations
 
                     b.HasKey("BookListingId");
 
-                    b.HasIndex("BookISBN");
+                    b.HasIndex("ISBN");
 
                     b.HasIndex("UserId");
 
@@ -331,7 +327,7 @@ namespace Data.EFCore.Migrations
                 {
                     b.HasOne("OTE.Data.EFCore.Entities.BookEntity", "Book")
                         .WithMany()
-                        .HasForeignKey("BookISBN")
+                        .HasForeignKey("ISBN")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

@@ -45,7 +45,7 @@ INSERT INTO "Books" ("ISBN", "Title", "Authors", "Publishers", "Description", "P
 ('12348', 'Tales of Quz', 'Mr. Quz', 'Quz Corp', 'Quz goes on an adventure', '1998-01-01 01:00:00-08', '2026-01-04 01:00:00-08'),
 ('12349', 'Tales of Quuz', 'Mr. Quuz', 'Quuz Corp', 'Quuz goes on an adventure', '1999-01-01 01:00:00-08', '2026-01-05 01:00:00-08');
 
-INSERT INTO "BookListings" ("Condition", "PurchaseType", "Price", "CreatedAt", "UserId", "BookISBN") VALUES
+INSERT INTO "BookListings" ("Condition", "PurchaseType", "Price", "CreatedAt", "UserId", "ISBN") VALUES
 ('Good', 'Buy', '$19.99', '2026-01-01 01:00:00-08', 1, '12345'),
 ('Good', 'Rent', '$29.99', '2026-01-02 01:00:00-08', 1, '12346'),
 ('Used', 'Buy', '$39.99', '2026-01-03 01:00:00-08', 1, '12347'),

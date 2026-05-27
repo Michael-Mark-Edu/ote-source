@@ -133,7 +133,8 @@ namespace Data.EFCore.Migrations
 
                     b.Property<string>("BookISBN")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("isbn");
 
                     b.Property<string>("Condition")
                         .IsRequired()
@@ -148,11 +149,6 @@ namespace Data.EFCore.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasJsonPropertyName("deletedAt");
-
-                    b.Property<string>("ISBN")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasJsonPropertyName("isbn");
 
                     b.Property<string>("Price")
                         .HasMaxLength(255)
