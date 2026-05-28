@@ -30,7 +30,7 @@ public class BookListingPostDto : IPostDto<BookListingPostDtoOutput>
     public int UserId { get; set; }
 
     [JsonPropertyName("isbn")]
-    public string BookISBN { get; set; } = null!;
+    public string ISBN { get; set; } = null!;
 
     public BookListingPostDtoOutput Map()
     {
@@ -41,7 +41,7 @@ public class BookListingPostDto : IPostDto<BookListingPostDtoOutput>
             PurchaseType = PurchaseType,
             Price = Price,
             UserId = UserId,
-            BookISBN = BookISBN
+            ISBN = ISBN
         };
 
         return new BookListingPostDtoOutput

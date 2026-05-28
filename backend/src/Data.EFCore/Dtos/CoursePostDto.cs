@@ -1,14 +1,19 @@
-using Microsoft.EntityFrameworkCore;
+using OTE.Data.EFCore.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace OTE.Data.EFCore.Entities;
+namespace OTE.Data.EFCore.Dtos;
 
-/// <summary>Entity type for representing courses.</summary>
-public class CourseEntity
+/// <summary>Output type for `CoursePostDto`.</summary>
+public class CoursePostDtoOutput
 {
-    [Key]
+    public required CourseEntity CourseEntity { get; set; }
+}
+
+/// <summary>`IPostDto` for inserting from a POST request.</summary>
+public class CoursePostDto : IPostDto<CoursePostDtoOutput>
+{
     [JsonPropertyName("courseId")]
     public int CourseId { get; set; }
 
@@ -29,16 +34,24 @@ public class CourseEntity
     [JsonPropertyName("level")]
     public string Level { get; set; } = string.Empty;
 
-    [JsonPropertyName("createdAt")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    [JsonPropertyName("deletedAt")]
-    public DateTime? DeletedAt { get; set; }
-
-    [JsonIgnore]
-    [ForeignKey("SchoolId")]
-    public SchoolEntity School { get; set; } = null!;
-
     [JsonPropertyName("schoolId")]
     public int SchoolId { get; set; }
+
+    public CoursePostDtoOutput Map()
+    {
+        var courseEntity = new CourseEntity
+        {
+            CourseId = 0,
+            CourseTitle = CourseTitle,
+            Subject = Subject,
+            SubjectAcronym = SubjectAcronym,
+            Level = Level,
+            SchoolId = SchoolId
+        };
+
+        return new CoursePostDtoOutput
+        {
+            CourseEntity = courseEntity
+        };
+    }
 }

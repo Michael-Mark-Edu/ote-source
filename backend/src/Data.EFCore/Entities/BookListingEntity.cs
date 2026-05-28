@@ -39,9 +39,10 @@ public class BookListingEntity
 
     // NAV Prop
     [JsonIgnore]
+    [ForeignKey(nameof(ISBN))]
     public BookEntity Book { get; set; } = null!;
 
     // FK
     [JsonPropertyName("isbn")]
-    public string BookISBN { get; set; } = null!;
+    public string ISBN { get; set; } = null!;
 }

@@ -19,6 +19,7 @@ public class CoverPhotoEntity
     public DateTime? DeletedAt { get; set; } = null;
 
     [JsonIgnore]
+    [ForeignKey("BookId")]
     public BookEntity ISBN { get; set; } = null!;
 
     [JsonPropertyName("bookId")]

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OTE.Data.EFCore.Contexts;
@@ -11,9 +12,11 @@ using OTE.Data.EFCore.Contexts;
 namespace Data.EFCore.Migrations
 {
     [DbContext(typeof(OteContext))]
-    partial class OteContextModelSnapshot : ModelSnapshot
+    [Migration("20260426223543_AllEntitiesAndDtos")]
+    partial class AllEntitiesAndDtos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,6 +131,11 @@ namespace Data.EFCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BookListingId"));
 
+                    b.Property<string>("BookISBN")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("isbn");
+
                     b.Property<string>("Condition")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -141,11 +149,6 @@ namespace Data.EFCore.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasJsonPropertyName("deletedAt");
-
-                    b.Property<string>("ISBN")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasJsonPropertyName("isbn");
 
                     b.Property<string>("Price")
                         .HasMaxLength(255)
@@ -164,7 +167,7 @@ namespace Data.EFCore.Migrations
 
                     b.HasKey("BookListingId");
 
-                    b.HasIndex("ISBN");
+                    b.HasIndex("BookISBN");
 
                     b.HasIndex("UserId");
 
@@ -324,7 +327,7 @@ namespace Data.EFCore.Migrations
                 {
                     b.HasOne("OTE.Data.EFCore.Entities.BookEntity", "Book")
                         .WithMany()
-                        .HasForeignKey("ISBN")
+                        .HasForeignKey("BookISBN")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
