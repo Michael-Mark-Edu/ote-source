@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useParams } from '@tanstack/react-router'
 import { FlagIcon } from '@heroicons/react/24/outline'
 
 // hypothetical public profile data model from the backend
@@ -25,7 +26,7 @@ type UserReview = {
 // temp mock profile data
 const mockProfile: PublicProfile = {
   id: 6,
-  displayName: 'Bean Coffie',
+  displayName: '',
   bio: 'Software engineering student selling textbooks from previous terms.',
   location: 'Oregon Tech',
   memberSince: '2025-09-01',
@@ -36,20 +37,7 @@ const mockProfile: PublicProfile = {
 
 // temp mock review data
 const mockReviews: UserReview[] = [
-  {
-    id: 1,
-    reviewerDisplayName: 'Saul Goodman',
-    rating: 5,
-    comment: 'Great seller. The book was exactly as described.',
-    createdAt: '2026-04-18T10:30:00Z',
-  },
-  {
-    id: 2,
-    reviewerDisplayName: 'Walter White',
-    rating: 4,
-    comment: 'Easy to communicate with and quick meetup.',
-    createdAt: '2026-04-12T14:15:00Z',
-  },
+  
 ]
 
 // converts backend dateStrings into readable date format
@@ -94,6 +82,14 @@ function StarRating({ rating, maxRating = 5, size = 'md' }: StarRatingProps) {
 }
 
 export default function ProfilePage() {
+  const { userId } = useParams({ from: '/users/$userId' })
+
+  const profile = {
+    ...mockProfile,
+    id: Number(userId),
+    displayName: `User #${userId}`,
+  }
+
   // review local storage until backend endpoint is ready
   const [reviews, setReviews] = useState<UserReview[]>(mockReviews)
 
@@ -143,7 +139,7 @@ export default function ProfilePage() {
 
     // TODO: call the backend report endpoint when implemented
     console.log({
-      reportedUserId: mockProfile.id,
+      reportedUserId: profile.id,
       reason: reportReason,
       details: reportDetails.trim(),
     })
@@ -161,7 +157,7 @@ export default function ProfilePage() {
           {/* public profile header */}
           <div>
             <h1 className="mb-2 text-3xl font-bold text-gray-900">
-              {mockProfile.displayName}
+              {profile.displayName}
 
               <button
                 type="button"
@@ -176,17 +172,17 @@ export default function ProfilePage() {
               </button>
             </h1>
 
-            <p className="mb-4 max-w-2xl text-gray-600">{mockProfile.bio}</p>
+            <p className="mb-4 max-w-2xl text-gray-600">{profile.bio}</p>
 
             <div className="flex flex-wrap gap-3 text-sm text-gray-500">
               <span className="rounded-full bg-gray-100 px-3 py-1">
-                {mockProfile.location}
+                {profile.location}
               </span>
               <span className="rounded-full bg-gray-100 px-3 py-1">
-                Member since {formatDate(mockProfile.memberSince)}
+                Member since {formatDate(profile.memberSince)}
               </span>
               <span className="rounded-full bg-gray-100 px-3 py-1">
-                {mockProfile.listingsCount} active listings
+                {profile.listingsCount} active listings
               </span>
             </div>
           </div>

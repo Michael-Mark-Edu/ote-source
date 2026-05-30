@@ -1,21 +1,36 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getListingById } from "../../api/listings"; // adjust path
-import type { BookListingGetDto } from "../../api/listings"; // adjust path
+import { getListingById } from "../../api/listings";
+import type { BookListingGetDto } from "../../api/listings";
+import { getBookByIsbn } from "../../api/books";
 
 type ListingDetails = {
   id: string;
   isbn: string;
+  title: string;
+  description: string;
+  authors: string;
+  publishers: string;
   condition: string;
   purchaseType: string;
   price: string;
   userId: string;
 };
 
-function toListingDetails(dto: BookListingGetDto): ListingDetails {
+function toListingDetails(
+  dto: BookListingGetDto,
+  bookTitle = `Textbook Listing #${dto.bookListingId}`,
+  bookDescription = "No description available.",
+  authors = "Unknown author",
+  publishers = "Unknown publisher"
+): ListingDetails {
   return {
     id: String(dto.bookListingId),
     isbn: dto.isbn,
+    title: bookTitle,
+    description: bookDescription,
+    authors,
+    publishers,
     condition: dto.condition,
     purchaseType: dto.purchaseType,
     price: dto.price ?? "—",
@@ -36,7 +51,26 @@ export default function ListingPage() {
     (async () => {
       try {
         const dto = await getListingById(listingId);
-        setListing(toListingDetails(dto));
+
+        let bookTitle = `Textbook Listing #${dto.bookListingId}`;
+        let bookDescription = "No description available.";
+        let authors = "Unknown author";
+        let publishers = "Unknown publisher";
+
+        try {
+          const book = await getBookByIsbn(dto.isbn);
+
+          if (book) {
+            bookTitle = book.title;
+            bookDescription = book.description ?? "No description available.";
+            authors = book.authors;
+            publishers = book.publishers;
+          }
+        } catch (bookError) {
+          console.warn("Failed to load book information:", bookError);
+        }
+
+        setListing(toListingDetails(dto, bookTitle, bookDescription, authors, publishers));
       } catch (e) {
         console.error(e);
         setError(e instanceof Error ? e.message : "Failed to load listing");
@@ -46,12 +80,13 @@ export default function ListingPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-amber-50">
-        <div className="mx-auto max-w-3xl px-4 py-8">
-          <Link to="/explore" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Back to Explore
+      <div className="min-h-screen bg-neutral-100">
+        <div className="mx-auto max-w-5xl px-4 py-6">
+          <Link to="/explore" className="text-sm text-blue-700 hover:underline">
+            ← back to listings
           </Link>
-          <div className="mt-6 rounded-xl border bg-white p-6">
+
+          <div className="mt-6 border border-gray-300 bg-white p-6">
             <h1 className="text-xl font-semibold">Could not load listing</h1>
             <p className="mt-2 text-sm text-gray-700">{error}</p>
           </div>
@@ -62,12 +97,13 @@ export default function ListingPage() {
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-amber-50">
-        <div className="mx-auto max-w-3xl px-4 py-8">
-          <Link to="/explore" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Back to Explore
+      <div className="min-h-screen bg-neutral-100">
+        <div className="mx-auto max-w-5xl px-4 py-6">
+          <Link to="/explore" className="text-sm text-blue-700 hover:underline">
+            ← back to listings
           </Link>
-          <div className="mt-6 rounded-xl border bg-white p-6">
+
+          <div className="mt-6 border border-gray-300 bg-white p-6">
             <h1 className="text-xl font-semibold">Loading…</h1>
             <p className="mt-2 text-sm text-gray-700">Fetching listing details.</p>
           </div>
@@ -76,100 +112,124 @@ export default function ListingPage() {
     );
   }
 
+  const displayPrice = listing.price === "—" ? "Price not listed" : `$${listing.price}`;
+
   return (
     <div className="min-h-screen bg-amber-50">
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-5xl px-4 py-6">
         <div className="mb-4">
-          <Link to="/explore" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Back to Explore
+          <Link to="/explore" className="text-sm text-blue-700 hover:underline">
+            ← back to listings
           </Link>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Image/Card */}
-          <div className="lg:col-span-1">
-            <div className="rounded-2xl border bg-white p-4 shadow-sm">
-              <div className="aspect-9/16 w-full rounded-xl bg-gray-200 grid place-items-center overflow-hidden">
-                <span className="text-gray-600 text-sm">No image yet</span>
-              </div>
+        <div className="border border-gray-300 bg-white">
+          {/* Header */}
+          <div className="border-b border-gray-300 px-5 py-4">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              {listing.title}
+            </h1>
 
-              <div className="mt-4 space-y-2">
-                <div className="text-2xl font-semibold">
-                  {listing.price === "—" ? "—" : `$${listing.price}`}
-                </div>
-                <div className="text-sm text-gray-600">Condition: {listing.condition}</div>
-                <div className="text-sm text-gray-600">Purchase Type: {listing.purchaseType}</div>
-
-                <button
-                  className="mt-2 w-full rounded-lg bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-800"
-                  type="button"
-                  onClick={() => alert("Placeholder: Contact seller")}
-                >
-                  Contact Seller
-                </button>
-
-                <button
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-                  type="button"
-                  onClick={() => alert("Placeholder: Save listing")}
-                >
-                  Save Listing
-                </button>
-              </div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+              <span>Seller #{listing.userId}</span>
+              <span>Oregon Tech</span>
             </div>
           </div>
 
-          {/* Listing Details */}
-          <div className="lg:col-span-2">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h1 className="text-2xl font-semibold">Listing #{listing.id}</h1>
-              <div className="mt-1 text-gray-600">ISBN: {listing.isbn}</div>
-
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <InfoRow label="Listing ID" value={listing.id} />
-                <InfoRow label="ISBN" value={listing.isbn} />
-                <InfoRow label="Condition" value={listing.condition} />
-                <InfoRow label="Purchase Type" value={listing.purchaseType} />
-                <InfoRow label="Price" value={listing.price === "—" ? "—" : `$${listing.price}`} />
-                <InfoRow label="Seller User ID" value={listing.userId} />
+          {/* Body */}
+          <div className="grid gap-6 p-5 lg:grid-cols-[minmax(0,2fr)_320px]">
+            {/* Left side */}
+            <div>
+              <div className="flex min-h-[420px] items-center justify-center border border-gray-300 bg-gray-100">
+                <span className="text-sm text-gray-500">No image uploaded yet</span>
               </div>
 
-              <div className="mt-6">
-                <div className="text-sm font-medium text-gray-700">Description</div>
-                <p className="mt-2 text-sm text-gray-700 leading-relaxed">
-                  Backend DTO doesn’t include description yet.
+              <section className="mt-6">
+                <h2 className="border-b border-gray-300 pb-2 text-lg font-semibold text-gray-900">
+                  Description
+                </h2>
+
+                <p className="mt-3 text-sm leading-6 text-gray-700">
+                  {listing.description}
                 </p>
+              </section>
+
+              <section className="mt-6">
+                <h2 className="border-b border-gray-300 pb-2 text-lg font-semibold text-gray-900">
+                  Listing Details
+                </h2>
+
+                <dl className="mt-3 grid gap-y-2 text-sm sm:grid-cols-[140px_1fr]">
+                  <dt className="font-medium text-gray-600">ISBN</dt>
+                  <dd className="text-gray-900">{listing.isbn}</dd>
+
+                  <dt className="font-medium text-gray-600">Author(s)</dt>
+                  <dd className="text-gray-900">{listing.authors}</dd>
+
+                  <dt className="font-medium text-gray-600">Publisher(s)</dt>
+                  <dd className="text-gray-900">{listing.publishers}</dd>
+
+                  <dt className="font-medium text-gray-600">Condition</dt>
+                  <dd className="text-gray-900">{listing.condition}</dd>
+
+                  <dt className="font-medium text-gray-600">Exchange type</dt>
+                  <dd className="text-gray-900">{listing.purchaseType}</dd>
+                </dl>
+              </section>
+            </div>
+
+            {/* Right side */}
+            <aside className="border border-gray-300 bg-neutral-50 p-4">
+              <div className="text-3xl font-semibold text-gray-900">
+                {displayPrice}
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <button
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-                  type="button"
-                  onClick={() => alert("Placeholder: Edit listing")}
-                >
-                  Edit
-                </button>
-                <button
-                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 hover:bg-red-100"
-                  type="button"
-                  onClick={() => alert("Placeholder: Delete listing")}
-                >
-                  Delete
-                </button>
+              <div className="mt-4 space-y-2 text-sm text-gray-700">
+                <div>
+                  <span className="font-medium">Condition:</span>{" "}
+                  {listing.condition}
+                </div>
+                <div>
+                  <span className="font-medium">Exchange:</span>{" "}
+                  {listing.purchaseType}
+                </div>
+                <div>
+                  <span className="font-medium">Seller:</span> User #{listing.userId}
+                </div>
               </div>
-            </div>
+
+              <button
+                className="mt-5 w-full bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                type="button"
+                onClick={() => alert("Placeholder: Contact seller")}
+              >
+                Contact Seller
+              </button>
+
+              <Link
+                to="/users/$userId"
+                params={{ userId: listing.userId }}
+                className="mt-3 block w-full border border-gray-400 bg-white px-4 py-2 text-center text-sm font-medium text-gray-800 hover:bg-gray-100"
+              >
+                View Seller Profile
+              </Link>
+
+              <button
+                className="mt-3 w-full border border-gray-400 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-100"
+                type="button"
+                onClick={() => alert("Placeholder: Save listing")}
+              >
+                Save Listing
+              </button>
+
+              <div className="mt-5 border-t border-gray-300 pt-4 text-xs leading-5 text-gray-600">
+                Meet in a public place and verify the textbook before completing
+                the exchange.
+              </div>
+            </aside>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border bg-gray-50 px-4 py-3">
-      <div className="text-xs font-medium text-gray-500">{label}</div>
-      <div className="mt-1 text-sm text-gray-800">{value}</div>
+      </main>
     </div>
   );
 }

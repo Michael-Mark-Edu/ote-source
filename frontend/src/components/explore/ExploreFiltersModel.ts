@@ -1,5 +1,7 @@
 export type ListingCondition = "new" | "likeNew" | "good" | "fair" | "poor";
 
+export type PurchaseTypeFilter = "All" | "Sell" | "Trade" | "Rent" | "Free";
+
 export type ExploreFilters = {
   hasImage: boolean;
   postedToday: boolean;
@@ -10,6 +12,10 @@ export type ExploreFilters = {
   class: string;
   subject: string;
   edition: string;
+  isbn: string;
+  author: string;
+  publisher: string;
+  purchaseType: PurchaseTypeFilter;
 };
 
 export const DEFAULT_FILTERS: ExploreFilters = {
@@ -22,6 +28,10 @@ export const DEFAULT_FILTERS: ExploreFilters = {
   class: "",
   subject: "",
   edition: "",
+  isbn: "",
+  author: "",
+  publisher: "",
+  purchaseType: "All",
 };
 
 export const CONDITION_LABELS: Record<ListingCondition, string> = {

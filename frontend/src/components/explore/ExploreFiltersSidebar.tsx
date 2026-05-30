@@ -30,7 +30,7 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
 
   return (
    <aside className="w-full md:w-72 lg:w-80 shrink-0">
-      <div className="sticky top-4 border border-blues-200 bg-blue-50 p-4 shadow-sm">
+      <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto border border-blue-200 bg-blue-50 p-4 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
@@ -56,16 +56,6 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
                   type="checkbox"
                   checked={filters.hasImage}
                   onChange={(e) => setFlag("hasImage", e.target.checked)}
-                  className="h-4 w-4 accent-slate-900"
-                />
-              </label>
-
-              <label className="flex items-center justify-between gap-3">
-                <span className="text-sm text-slate-800">Posted Today</span>
-                <input
-                  type="checkbox"
-                  checked={filters.postedToday}
-                  onChange={(e) => setFlag("postedToday", e.target.checked)}
                   className="h-4 w-4 accent-slate-900"
                 />
               </label>
@@ -111,7 +101,7 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
                   value={filters.priceMin}
                   onChange={(e) => update({ ...filters, priceMin: e.target.value })}
                   placeholder="0"
-                  className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
+                  className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </div>
               <div>
@@ -121,7 +111,7 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
                   value={filters.priceMax}
                   onChange={(e) => update({ ...filters, priceMax: e.target.value })}
                   placeholder="200"
-                  className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
+                  className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </div>
             </div>
@@ -131,19 +121,6 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
 
           </section>
 
-          {/* Class */}
-          <section>
-            <h3 className="text-sm font-semibold text-slate-900">Class</h3>
-            <input
-              value={filters.class}
-              onChange={(e) => update({ ...filters, class: e.target.value })}
-              placeholder="e.g., CST 211"
-              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
-            />
-            {/* TODO: Implement dropdown/autocomplete */}
-            <p className="mt-1 text-xs text-slate-500">Placeholder for dropdown/autocomplete later.</p> 
-          </section>
-
           {/* Subject */}
           <section>
             <h3 className="text-sm font-semibold text-slate-900">Subject</h3>
@@ -151,22 +128,66 @@ export default function ExploreFiltersSidebar({ onChange }: Props) {
               value={filters.subject}
               onChange={(e) => update({ ...filters, subject: e.target.value })}
               placeholder="e.g., Data Structures"
-              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
+              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
             />
             {/* TODO: Implement dropdown/autocomplete */}
-            <p className="mt-1 text-xs text-slate-500">Placeholder for dropdown/autocomplete later.</p>
           </section>
 
-          {/* Edition */}
+          {/* Author */}
           <section>
-            <h3 className="text-sm font-semibold text-slate-900">Edition</h3>
+            <h3 className="text-sm font-semibold text-slate-900">Author</h3>
             <input
-              value={filters.edition}
-              onChange={(e) => update({ ...filters, edition: e.target.value })}
-              placeholder="e.g., 3rd"
-              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:rinr-blue-200"
+              value={filters.author}
+              onChange={(e) => update({ ...filters, author: e.target.value })}
+              placeholder="e.g., Abraham Silberschatz"
+              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
             />
           </section>
+
+          {/* Publisher */}
+          <section>
+            <h3 className="text-sm font-semibold text-slate-900">Publisher</h3>
+            <input
+              value={filters.publisher}
+              onChange={(e) => update({ ...filters, publisher: e.target.value })}
+              placeholder="e.g., Pearson"
+              className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </section>
+
+          {/* ISBN */}
+          <section>
+            <h3 className="text-sm font-semibold text-slate-900">ISBN</h3>
+            <input
+              type="text"
+              value={filters.isbn}
+              onChange={(e) => update({  ...filters, isbn: e.target.value })}
+              placeholder="Search by ISBN"
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </section>
+
+          {/* Purchase Type */}
+            <section>
+              <h3 className="text-sm font-semibold text-slate-900">Purchase Type</h3>
+
+              <select
+                value={filters.purchaseType}
+                onChange={(e) =>
+                  update({
+                    ...filters,
+                    purchaseType: e.target.value as typeof filters.purchaseType,
+                  })
+                }
+                className="mt-1 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                <option value="All">All</option>
+                <option value="Sell">Sell</option>
+                <option value="Trade">Trade</option>
+                <option value="Rent">Rent</option>
+                <option value="Free">Free</option>
+              </select>
+            </section>
         </div>
       </div>
     </aside>

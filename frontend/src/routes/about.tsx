@@ -6,43 +6,120 @@ export const Route = createFileRoute('/about')({
 
 function AboutPage() {
   return (
-  <>
-      
-     {/* About Banner */}
-      <section className="h-[300px] w-full bg-contain bg-center relative"
-      style={{ backgroundImage: "url('/about_us_banner.png')" }}
+    <>
+      {/* About Banner */}
+      <section
+        className="relative h-[300px] w-full bg-cover bg-center"
+        style={{ backgroundImage: "url('/about_us_banner.png')" }}
       >
-      </section>
+        <div className="absolute inset-0 bg-black/40" />
 
-     {/* About Us */}
-      <section className="h-[150px] bg-gray-100">
-        <p className=" text-black font-semibold text-4xl mx-70 pt-8">Who we are</p>
-        <p className=" text-black text-xl mx-70 pt-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras volutpat non velit eget aliquet. Phasellus tristique viverra enim vitae ultrices. 
-              Ut fermentum nulla et nisi commodo aliquet. Aenean dictum odio convallis neque tempor feugiat. Curabitur varius magna odio.</p>
-      </section>
-
-      {/* Mission */}
-      <section className="h-[400px] bg-gray-100">
-        <p className=" text-black font-semibold text-4xl mx-70 pt-10">Our Mission</p>
-        <p className=" text-black text-xl mx-70 pt-6"><strong>Lorem ipsum dolor sit amet.</strong> consectetur adipiscing elit. Cras volutpat non velit eget aliquet. Phasellus tristique viverra enim vitae ultrices. 
-              Ut fermentum nulla et nisi commodo aliquet. Aenean dictum odio convallis neque tempor feugiat. Curabitur varius magna odio.</p>
-        <p className=" text-black text-xl mx-70 pt-6"><strong>Curabitur imperdiet est velit.</strong> ultricies massa aliquam non. Suspendisse non ligula aliquet, aliquam velit ac, vehicula risus. Curabitur velit nibh, consectetur eget arcu a, semper dictum odio.</p>
-        <p className=" text-black text-xl mx-70 pt-6"><strong>Aenean interdum lectus in elementum mollis.</strong> Fusce ullamcorper ultricies dui, sit amet vehicula eros facilisis nec. Maecenas id eleifend velit, vitae sagittis risus.</p>
-        <p className=" text-black text-xl mx-70 pt-6"><strong>Praesent sagittis blandit neque in lobortis.</strong> Aenean interdum lectus in elementum mollis.</p>
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-center px-6 text-white">
+          <h1 className="text-5xl font-bold">About Open Textbook Exchange</h1>
+          <p className="mt-4 max-w-2xl text-xl">
+            A student-focused platform built to make textbooks easier to find,
+            share, and afford.
+          </p>
+        </div>
       </section>
 
       {/* About Us */}
-      <section className="h-[60px] bg-gray-600"></section>
+      <section className="bg-gray-100 py-12">
+        <div className="mx-auto max-w-5xl px-6">
+          <h2 className="text-4xl font-semibold text-gray-900">Who We Are</h2>
+
+          <p className="mt-6 text-xl leading-8 text-gray-700">
+            Open Textbook Exchange is a web platform designed for Oregon Tech
+            students who want a better way to buy, sell, rent, or trade
+            textbooks. The project was created to support students by giving
+            them a direct way to exchange course materials within their own
+            campus community.
+          </p>
+        </div>
+      </section>
+
+      {/* Mission */}
+      <section className="bg-gray-100 py-12">
+        <div className="mx-auto max-w-5xl px-6">
+          <h2 className="text-4xl font-semibold text-gray-900">Our Mission</h2>
+
+          <p className="mt-6 text-xl leading-8 text-gray-700">
+            <strong>Make textbooks more affordable.</strong> Textbooks can be a
+            major cost for students, so OTE helps students find used textbooks
+            directly from other Oregon Tech students.
+          </p>
+
+          <p className="mt-6 text-xl leading-8 text-gray-700">
+            <strong>Keep exchanges student-centered.</strong> Instead of relying
+            on an outside marketplace, OTE focuses on connecting students who are
+            taking similar courses and may need the same materials.
+          </p>
+
+          <p className="mt-6 text-xl leading-8 text-gray-700">
+            <strong>Make listings simple to create and browse.</strong> Users can
+            create textbook listings with details such as title, ISBN, condition,
+            price, exchange type, and photos.
+          </p>
+
+          <p className="mt-6 text-xl leading-8 text-gray-700">
+            <strong>Support trust between users.</strong> Public profiles,
+            reviews, and account reporting help students make more informed
+            decisions when viewing listings and contacting sellers.
+          </p>
+        </div>
+      </section>
+
+      <section className="h-[60px] bg-gray-700" />
 
       {/* How It Works */}
-      <section className="h-[450px] bg-gray-100">
-        <p className=" text-black font-semibold text-4xl text-center mx-70 pt-12 pb-8">How It Works</p>
-        <section className="grid grid-cols-4 gap-4 mx-150">
-          <div className="text-center p-2"><strong>Find Your Book</strong><br></br>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras volutpat non velit eget aliquet. Phasellus tristique viverra enim vitae ultrices.</div>
-          <div className="text-center p-2"><strong>Contact Seller</strong><br></br>ultricies massa aliquam non. Suspendisse non ligula aliquet, aliquam velit ac, vehicula risus.</div>
-          <div className="text-center p-2"><strong>Meet up</strong><br></br>Fusce ullamcorper ultricies dui, sit amet vehicula eros facilisis nec. Maecenas id eleifend velit, vitae sagittis risus.</div>
-          <div className="text-center p-2"><strong>Recieve Book</strong><br></br>Praesent sagittis blandit neque in lobortis. Aenean interdum lectus in elementum mollis.</div>
-        </section>
+      <section className="bg-gray-100 py-16">
+        <div className="mx-auto max-w-6xl px-6">
+          <h2 className="text-center text-4xl font-semibold text-gray-900">
+            How It Works
+          </h2>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Find Your Book
+              </h3>
+              <p className="mt-3 text-gray-600">
+                Search and browse textbook listings by title, ISBN, course, or
+                other listing details.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900">
+                View the Listing
+              </h3>
+              <p className="mt-3 text-gray-600">
+                Check the book condition, price, exchange type, photos, and
+                seller profile before deciding.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Contact the Seller
+              </h3>
+              <p className="mt-3 text-gray-600">
+                Use the seller information to reach out and arrange the textbook
+                exchange.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Exchange the Book
+              </h3>
+              <p className="mt-3 text-gray-600">
+                Meet safely, verify the textbook, and complete the buy, sell,
+                rent, or trade agreement.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
     </>
   )
