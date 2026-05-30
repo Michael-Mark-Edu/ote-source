@@ -48,3 +48,39 @@ export async function getListingById(listingId: number | string): Promise<BookLi
   }
   return (await res.json()) as BookListingGetDto;
 }
+
+export type ListingImageGetDto = {
+  id: number;
+  listingId: number;
+  imageUrl: string;
+  s3Key?: string;
+  createdAt?: string;
+};
+
+export async function uploadListingImages(
+  listingId: number | string,
+  files: File[]
+): Promise<ListingImageGetDto[]> {
+  if (files.length === 0) {
+    return [];
+  }
+
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  const res = await fetch(`/api/listings/${listingId}/images`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || "Failed to upload listing images");
+  }
+
+  return (await res.json()) as ListingImageGetDto[];
+}

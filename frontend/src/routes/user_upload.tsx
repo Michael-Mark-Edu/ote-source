@@ -3,9 +3,8 @@ import { PhotoIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
 import { useMemo, useState, useContext } from "react";
 import { AuthContext } from '../components/auth/AuthContext';
-import { getBookByIsbn, createBook } from "../api/books";
-import type { BookListingPostDto } from "../api/listings";
-import type { BookPostDto } from "../api/books";
+import { getBookByIsbn, createBook, type BookPostDto } from "../api/books";
+import { createListing, uploadListingImages, type BookListingPostDto } from "../api/listings";
 
 
 export const Route = createFileRoute("/user_upload")({
@@ -26,7 +25,7 @@ type UploadForm = {
   courseNumber: number | "";
   description: string;
   price: number | "";
-  trade: string;
+  purchaseType: string;
 };
 
 function UploadPage() {
@@ -44,7 +43,7 @@ function UploadPage() {
     courseNumber: "",
     description: "",
     price: "",
-    trade: "",
+    purchaseType: "All",
   });
 
   const [files, setFiles] = useState<File[]>([]);
@@ -106,66 +105,28 @@ function UploadPage() {
 
     // Create the listing
     const dto: BookListingPostDto = {
-      condition: form.condition,
-      purchaseType: form.trade.trim().length ? "Trade" : "Sell",
-      price: form.price === "" ? null : String(form.price),
-      userId,
-      isbn: form.isbn.trim(),
+    condition: form.condition,
+    purchaseType: form.purchaseType.trim().length ? "Trade" : "Sell",
+    price: form.price === "" ? null : String(form.price),
+    userId,
+    isbn: form.isbn.trim(),
     };
 
-    const res = await fetch("/api/listings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(dto),
-    });
+    const createdListing = await createListing(dto);
 
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg || "Failed to create listing");
-    }
+    // Upload images after the listing has been created
+    // The backend handles sending these images to S3
+    await uploadListingImages(createdListing.bookListingId, files);
 
-    const created = await res.json();
-    const listingId = created.bookListingId;
-
-    if (!listingId) {
-      throw new Error("Create listing succeeded but response missing bookListingId");
-    }
-
-    // Upload image
-    if (files.length > 0) {
-        try {
-            const formData = new FormData();
-            files.forEach((file) => formData.append("images", file));
-
-            const imgRes = await fetch(`/api/listings/${listingId}/images`, {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-            });
-
-            if (!imgRes.ok) {
-            const msg = await imgRes.text();
-            console.warn("Image upload failed:", imgRes.status, msg);
-
-            if (imgRes.status !== 405) {
-                throw new Error(msg || "Image upload failed");
-            }
-            }
-        } catch (e) {
-            console.warn("Image upload exception (continuing):", e);
-        }
-    }
-
-    // Navigate to listing page
+    // Navigate to the new listing page
     navigate({
-      to: "/listings/$listingId",
-      params: { listingId: String(listingId) },
+    to: "/listings/$listingId",
+    params: { listingId: String(createdListing.bookListingId) },
     });
-  } catch (err) {
-    console.error(err);
-    alert(err instanceof Error ? err.message : "Failed to create listing");
-  }
+    } catch (err) {
+        console.error(err);
+        alert(err instanceof Error ? err.message : "Failed to create listing");
+    }
 }
 
   return (
@@ -217,7 +178,7 @@ function UploadPage() {
                             onChange={(e) => setField("title", e.target.value)}
                             type="text"
                             placeholder="Title"
-                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500" 
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
                             />
                         </div>
                         
@@ -232,7 +193,7 @@ function UploadPage() {
                             onChange={(e) => setField("author", e.target.value)}
                             type="text"
                             placeholder="Author"
-                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             />
                         </div>
 
@@ -247,7 +208,7 @@ function UploadPage() {
                             onChange={(e) => setField("edition", e.target.value)}
                             type="text"
                             placeholder="3rd Edition"
-                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500" 
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
                             />
                         </div>
 
@@ -266,7 +227,7 @@ function UploadPage() {
                             type="number"
                             inputMode="numeric"
                             placeholder="Year"
-                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500" 
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
                             />
                         </div>
 
@@ -282,7 +243,7 @@ function UploadPage() {
                             type="text"
                             inputMode="numeric"
                             placeholder="ISBN"
-                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             /> 
                         </div>
 
@@ -327,7 +288,7 @@ function UploadPage() {
                             onChange={(e) => setField("subject", e.target.value)}
                             type="text"
                             placeholder="Subject"
-                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500" 
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
                             /> 
                         </div>
 
@@ -346,7 +307,7 @@ function UploadPage() {
                             type="number"
                             inputMode="numeric"
                             placeholder="211"
-                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             /> 
                         </div>
                     </div>
@@ -383,12 +344,34 @@ function UploadPage() {
                                             accept="image/*"
                                             multiple
                                             className="sr-only"
-                                            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+                                            onChange={(e) => {
+                                                const selectedFiles = Array.from(e.target.files ?? []);
+
+                                                const validFiles = selectedFiles.filter((file) => {
+                                                    const isImage = file.type.startsWith("image/");
+                                                    const isSmallEnough = file.size <= 10 * 1024 * 1024;
+
+                                                    return isImage && isSmallEnough;
+                                                });
+
+                                                if (validFiles.length !== selectedFiles.length) {
+                                                    alert("Only image files under 10MB are allowed.");
+                                                }
+
+                                                setFiles(validFiles);
+                                                }}
                                             />
                                         </label>
                                         <span>or drag and drop</span>
                                     </div>
                                     <p className="text-xs/5 text-gray-400">PNG, JPG, GIF up to 10MB</p>
+                                    {files.length > 0 && (
+                                        <ul className="mt-2 text-xs text-gray-500">
+                                            {files.map((file) => (
+                                            <li key={file.name}>{file.name}</li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -398,37 +381,42 @@ function UploadPage() {
                     <div className="flex flex-wrap w-full justify-center-safe items-center-safe">
                         <div className="w-full mb-3 mx-6 my-3">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="description">
-                                Description of Book
+                                Description
                             </label>
                             <div className="mt-2">
                                 <textarea
                                 id="description"
                                 rows={3}
-                                placeholder="Write a description about the book..."
-                                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
+                                placeholder="Write a description about the book and listing details..."
+                                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                                 value={form.description}
                                 onChange={(e) => setField("description", e.target.value)}
                                 />
                             </div>
                         </div>
                     </div>
-
-                    {/* Negotiation Block? */}
+                    
+                    {/* Purchase Type Block */}
                     <div className="flex flex-wrap w-full justify-center-safe items-center-safe">
-                        <div className="w-full mb-6 mx-6">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="trade">
-                                Trade Negotionations
+                        <div className="w-full mb-3 mx-6 my-3">
+                            <label
+                            htmlFor="purchaseType"
+                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            >
+                            Purchase Type
                             </label>
-                            <div className="mt-2">
-                                <textarea
-                                id="trade"
-                                rows={3}
-                                placeholder="Here you can write about what you would want to trade it for or if you are just looking to get it off your hands..."
-                                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-non focus:bg-white focus:border-gray-500"
-                                value={form.trade}
-                                onChange={(e) => setField("trade", e.target.value)}
-                                />
-                            </div>
+
+                            <select
+                            id="purchaseType"
+                            value={form.purchaseType}
+                            onChange={(e) => setField("purchaseType", e.target.value)}
+                            className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            >
+                            <option value="Sell">Sell</option>
+                            <option value="Trade">Trade</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Free">Free</option>
+                            </select>
                         </div>
                     </div>
 
