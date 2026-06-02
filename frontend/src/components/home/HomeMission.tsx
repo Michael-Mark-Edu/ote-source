@@ -5,9 +5,11 @@ export default function HomeMission() {
         <div>
           <h1 className="font-bold text-2xl mb-4">Mission Statement</h1>
           <p className="text-gray-600">
-            Open Textbook Exchange’s mission is to make textbooks more affordable, accessible, and student-centered for Oregon Tech students. 
-            By connecting students directly with one another, OTE provides a simple way to buy, sell, rent, or trade textbooks without relying on outside marketplaces. 
-            The platform is designed to make listings easy to create and browse while supporting trust through public profiles, reviews, and account reporting.
+            Our mission is to create a sustainable and affordable textbook marketplace 
+            for students. We aim to reduce the financial burden of education by facilitating 
+            the buying, selling, and trading of textbooks within local communities. By 
+            connecting students directly, we strive to promote a more eco-friendly 
+            approach to textbook usage and foster a sense of community among learners.
           </p>
         </div>
       </div>
