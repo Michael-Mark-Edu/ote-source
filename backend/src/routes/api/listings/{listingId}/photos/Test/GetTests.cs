@@ -25,7 +25,7 @@ public class GetTests
         context.Logger.LogDebug($"GET /api/listings/{{listingId}}/photos SimpleTest | response.Body = {response.Body}");
         Assert.Equal(200, response.StatusCode);
 
-        var entities = JsonSerializer.Deserialize<BookListingGetDto>(response.Body);
+        var entities = JsonSerializer.Deserialize<IEnumerable<ListingPhotoGetDto>>(response.Body);
         Assert.NotNull(entities);
     }
 

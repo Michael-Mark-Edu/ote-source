@@ -70,10 +70,8 @@ public class Function
         {
             case "GET":
                 return await get(request, context, parsedId);
-            case "PATCH":
-                return await patch(request, context, parsedId);
-            case "DELETE":
-                return await delete(request, context, parsedId);
+            case "POST":
+                return await post(request, context, parsedId);
             default:
                 return new APIGatewayHttpApiV2ProxyResponse
                 {
@@ -81,7 +79,7 @@ public class Function
                     Body = $"{{\"error\":\"Method '{method}' not allowed.\"}}",
                     Headers = new Dictionary<string, string> {
                         { "Content-Type", "application/json" },
-                        { "Allow", "GET, PATCH, DELETE" }
+                        { "Allow", "GET, POST" }
                     }
                 };
         }
@@ -91,193 +89,39 @@ public class Function
     {
         using var oteContext = new OteContext();
 
-        var foundListing = await oteContext
-            .BookListings
+        var photos = await oteContext
+            .ListingPhotos
             .Where(e => e.BookListingId == listingId)
             .Where(e => e.DeletedAt == null)
-            .FirstOrDefaultAsync();
+            .ToArrayAsync();
 
-        if (foundListing == null)
+        if (photos.Count() <= 0)
+        {
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
-                Body = $"{{\"error\":\"Listing with listingId '{listingId}' does not exist.\"}}",
+                Body = $"{{\"error\":\"Listing '{listingId}' does not have any photos.\"}}",
                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
+        }
 
-        var listingGetDto = new BookListingGetDto(foundListing);
-        var listingGetDtoJson = JsonSerializer.Serialize(listingGetDto);
+        List<ListingPhotoGetDto> photoGetDtos = new();
+        foreach (var photo in photos)
+        {
+            photoGetDtos.Add(new ListingPhotoGetDto(photo));
+        }
+
+        var photoGetDtosJson = JsonSerializer.Serialize(photoGetDtos);
 
         return new APIGatewayHttpApiV2ProxyResponse
         {
             StatusCode = 200,
-            Body = listingGetDtoJson,
+            Body = photoGetDtosJson,
             Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }
 
-    private async Task<APIGatewayHttpApiV2ProxyResponse> patch(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int listingId)
-    {
-        using var oteContext = new OteContext();
-
-        var foundListing = await oteContext
-            .BookListings
-            .Include(e => e.Seller)
-            .Where(e => e.BookListingId == listingId)
-            .Where(e => e.DeletedAt == null)
-            .FirstOrDefaultAsync();
-
-        var deserializeResult = ApiFunctions.DeserializeJsonDictionary(request, context.Logger);
-        if (!deserializeResult.Ok)
-            return deserializeResult.UnwrapError();
-
-        var dsz = deserializeResult.Unwrap();
-
-        if (foundListing == null)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 404,
-                Body = $"{{\"error\":\"Listing with listingId '{listingId}' does not exist.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-
-        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, foundListing.UserId);
-
-        if (validateCookieResult != null)
-            return validateCookieResult;
-
-        // if (dsz.ContainsKey("username") && dsz["username"].ValueKind != JsonValueKind.String)
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'username' to be {JsonValueKind.String}, instead got {dsz["username"].ValueKind}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        // if (dsz.ContainsKey("emailAddress") && dsz["emailAddress"].ValueKind != JsonValueKind.String)
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'emailAddress' to be {JsonValueKind.String}, instead got {dsz["emailAddress"].ValueKind}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        // if (dsz.ContainsKey("firstName") && dsz["firstName"].ValueKind != JsonValueKind.String && dsz["firstName"].ValueKind == JsonValueKind.Null)
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'firstName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["firstName"].ValueKind}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        // if (dsz.ContainsKey("lastName") && dsz["lastName"].ValueKind != JsonValueKind.String && dsz["lastName"].ValueKind != JsonValueKind.Null)
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'lastName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["lastName"].ValueKind}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        // if (dsz.ContainsKey("middleName") && dsz["middleName"].ValueKind != JsonValueKind.String && dsz["middleName"].ValueKind != JsonValueKind.Null)
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'middleName' to be {JsonValueKind.String} or {JsonValueKind.Null}, instead got {dsz["middleName"].ValueKind}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        // if (dsz.ContainsKey("password") && dsz["password"].ValueKind != JsonValueKind.String)
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'password' to be {JsonValueKind.String}, instead got {dsz["password"].ValueKind}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        // if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind != JsonValueKind.Number)
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'schoolId' to be {JsonValueKind.Number}, instead got {dsz["schoolId"].ValueKind}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        //
-        // if (dsz.ContainsKey("username") && dsz["username"].ValueKind == JsonValueKind.String)
-        // {
-        //     foundUser.Username = dsz["username"]!.GetString()!;
-        //     dsz.Remove("username");
-        // }
-        // if (dsz.ContainsKey("emailAddress") && dsz["emailAddress"].ValueKind == JsonValueKind.String)
-        // {
-        //     foundUser.EmailAddress = dsz["emailAddress"]!.GetString()!;
-        //     dsz.Remove("emailAddress");
-        // }
-        // if (dsz.ContainsKey("firstName") && (dsz["firstName"].ValueKind == JsonValueKind.String || dsz["firstName"].ValueKind == JsonValueKind.Null))
-        // {
-        //     foundUser.FirstName = dsz["firstName"]!.GetString();
-        //     dsz.Remove("firstName");
-        // }
-        // if (dsz.ContainsKey("lastName") && (dsz["lastName"].ValueKind == JsonValueKind.String || dsz["lastName"].ValueKind == JsonValueKind.Null))
-        // {
-        //     foundUser.LastName = dsz["lastName"]!.GetString();
-        //     dsz.Remove("lastName");
-        // }
-        // if (dsz.ContainsKey("middleName") && (dsz["middleName"].ValueKind == JsonValueKind.String || dsz["middleName"].ValueKind == JsonValueKind.Null))
-        // {
-        //     foundUser.MiddleName = dsz["middleName"]!.GetString();
-        //     dsz.Remove("middleName");
-        // }
-        //
-        // int schoolId = 0;
-        // if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number && !dsz["schoolId"].TryGetInt32(out schoolId))
-        //     return new APIGatewayHttpApiV2ProxyResponse
-        //     {
-        //         StatusCode = 400,
-        //         Body = $"{{\"error\":\"Expected 'schoolId' to be a signed 32 bit integer, instead got a different {JsonValueKind.Number}.\"}}",
-        //         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        //     };
-        // else if (dsz.ContainsKey("schoolId") && dsz["schoolId"].ValueKind == JsonValueKind.Number)
-        // {
-        //     foundUser.SchoolId = schoolId;
-        //     dsz.Remove("middleName");
-        // }
-
-        if (dsz.Count > 0)
-            return new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = 400,
-                Body = $"{{\"error\":\"Request body contains {dsz.Count} extra JSON field{(dsz.Count == 1 ? "" : "s")}.\"}}",
-                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-            };
-
-        var updatedListingEntry = oteContext
-            .BookListings
-            .Update(foundListing);
-
-        try
-        {
-            await oteContext.SaveChangesAsync();
-        }
-        catch (Exception e)
-        {
-            for (Exception? i = e; i != null; i = i.InnerException)
-            {
-                if (i.GetType().IsAssignableTo(typeof(NpgsqlException)))
-                {
-                    var n = (NpgsqlException)i;
-                    return ApiFunctions.HandleRepoError(n, context.Logger);
-                }
-            }
-            throw;
-        }
-
-        var updatedListing = updatedListingEntry.Entity;
-        var listingGetDto = new BookListingGetDto(updatedListing);
-        var listingGetDtoJson = JsonSerializer.Serialize(listingGetDto);
-
-        return new APIGatewayHttpApiV2ProxyResponse
-        {
-            StatusCode = 200,
-            Body = listingGetDtoJson,
-            Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-        };
-    }
-
-    private async Task<APIGatewayHttpApiV2ProxyResponse> delete(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int listingId)
+    private async Task<APIGatewayHttpApiV2ProxyResponse> post(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, int listingId)
     {
         using var oteContext = new OteContext();
 

@@ -10,21 +10,29 @@ public class ListingPhotoGetDto : IGetDto<ListingPhotoEntity>
     [JsonPropertyName("listingPhotoId")]
     public int ListingPhotoId { get; set; }
 
-    [MaxLength(255)]
-    [JsonPropertyName("bookListingId")]
-    public int BookListingId { get; set; }
+    [JsonPropertyName("photoIndex")]
+    public int PhotoIndex { get; set; }
 
+    [JsonPropertyName("photoUrl")]
+    public string PhotoUrl { get; set; } = null!;
+
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ListingPhotoGetDto(ListingPhotoEntity listingPhotoEntity)
     {
         ListingPhotoId = listingPhotoEntity.ListingPhotoId;
-        BookListingId = listingPhotoEntity.BookListingId;
+        PhotoIndex = listingPhotoEntity.PhotoIndex;
+        PhotoUrl = listingPhotoEntity.PhotoUrl;
+        CreatedAt = listingPhotoEntity.CreatedAt;
     }
 
     [JsonConstructor]
-    public ListingPhotoGetDto(int listingPhotoId, int bookListingId)
+    public ListingPhotoGetDto(int listingPhotoId, int photoIndex, string photoUrl, DateTime createdAt)
     {
         ListingPhotoId = listingPhotoId;
-        BookListingId = bookListingId;
+        PhotoIndex = photoIndex;
+        PhotoUrl = photoUrl;
+        CreatedAt = createdAt;
     }
 }

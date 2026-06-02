@@ -52,4 +52,13 @@ INSERT INTO "BookListings" ("Condition", "PurchaseType", "Price", "CreatedAt", "
 ('Used', 'Rent', '$49.99', '2026-01-04 01:00:00-08', 2, '12348'),
 ('Good', 'Buy', '$59.99', '2026-01-05 01:00:00-08', 2, '12349');
 
+INSERT INTO "ListingPhotos" ("PhotoUrl", "CreatedAt", "BookListingId", "PhotoIndex") VALUES
+('https://ote-listing-photos.s3.us-west-2.amazonaws.com/27JP1+DB+Design.drawio.png', '2026-06-01 01:00:00-08', 1, 1),
+('https://ote-listing-photos.s3.us-west-2.amazonaws.com/27JP1+DB+Design.drawio.png', '2026-06-02 02:00:00-08', 2, 1),
+('https://ote-listing-photos.s3.us-west-2.amazonaws.com/27JP1+DB+Design.drawio.png', '2026-06-03 03:00:00-08', 3, 1),
+('https://ote-listing-photos.s3.us-west-2.amazonaws.com/27JP1+DB+Design.drawio.png', '2026-06-04 04:00:00-08', 4, 1),
+('https://ote-listing-photos.s3.us-west-2.amazonaws.com/27JP1+DB+Design.drawio.png', '2026-06-05 05:00:00-08', 5, 1),
+('https://ote-listing-photos.s3.us-west-2.amazonaws.com/27JP1+DB+Design.drawio.png', '2026-06-01 01:00:00-08', 1, 2),
+('https://ote-listing-photos.s3.us-west-2.amazonaws.com/27JP1+DB+Design.drawio.png', '2026-06-01 01:00:00-08', 1, 3);
+
 COMMIT;

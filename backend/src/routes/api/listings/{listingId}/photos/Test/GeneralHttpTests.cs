@@ -21,7 +21,7 @@ public class GeneralHttpTests
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
+        Assert.Equal("GET, POST", response.Headers["Allow"]);
 
         context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos LowercaseGet405Test | response.Body = {response.Body}");
     }
@@ -41,7 +41,7 @@ public class GeneralHttpTests
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
+        Assert.Equal("GET, POST", response.Headers["Allow"]);
 
         context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos GetGet405Test | response.Body = {response.Body}");
     }
@@ -61,7 +61,7 @@ public class GeneralHttpTests
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
+        Assert.Equal("GET, POST", response.Headers["Allow"]);
 
         context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos Delete405Test | response.Body = {response.Body}");
     }
@@ -81,7 +81,7 @@ public class GeneralHttpTests
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
+        Assert.Equal("GET, POST", response.Headers["Allow"]);
 
         context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos Blank405Test | response.Body = {response.Body}");
     }
