@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\Data.EFCore\Data.EFCore.csproj" />
-    <ProjectReference Include="..\..\..\..\..\Common.Api\Common.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\Data.EFCore\Data.EFCore.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\Common.Api\Common.Api.csproj" />
   </ItemGroup>
 </Project>

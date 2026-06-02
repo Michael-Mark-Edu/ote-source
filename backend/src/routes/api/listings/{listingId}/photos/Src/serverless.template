@@ -3,7 +3,7 @@
   "Transform": "AWS::Serverless-2016-10-31",
   "Description": "This template is partially managed by Amazon.Lambda.Annotations (v1.8.0.0).",
   "Resources": {
-    "OTERoutesApiListingsPhotosFunctionFunctionHandlerGenerated": {
+    "OTERoutesApiListingsListingIdPhotosFunctionFunctionHandlerGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations"
@@ -17,7 +17,7 @@
           "AWSLambdaBasicExecutionRole"
         ],
         "PackageType": "Zip",
-        "Handler": "Photos::OTE.Routes.Api.Listings.Photos.Function_FunctionHandler_Generated::FunctionHandler"
+        "Handler": "Photos::OTE.Routes.Api.Listings.ListingId.Photos.Function_FunctionHandler_Generated::FunctionHandler"
       }
     }
   }

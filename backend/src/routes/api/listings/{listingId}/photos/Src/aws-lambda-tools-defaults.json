@@ -12,5 +12,5 @@
   "function-runtime": "dotnet10",
   "function-memory-size": 512,
   "function-timeout": 30,
-  "function-handler": "Photos::OTE.Routes.Api.Listings.Photos.Function::FunctionHandler"
+  "function-handler": "Photos::OTE.Routes.Api.Listings.ListingId.Photos.Function::FunctionHandler"
 }

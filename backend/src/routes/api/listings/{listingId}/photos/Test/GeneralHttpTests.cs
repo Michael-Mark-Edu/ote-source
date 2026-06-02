@@ -2,7 +2,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
 using Xunit;
 
-namespace OTE.Routes.Api.Listings.Photos;
+namespace OTE.Routes.Api.Listings.ListingId.Photos;
 
 public class GeneralHttpTests
 {
@@ -12,6 +12,7 @@ public class GeneralHttpTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "1" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "get";
@@ -20,9 +21,9 @@ public class GeneralHttpTests
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, POST", response.Headers["Allow"]);
+        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
 
-        context.Logger.LogDebug($"GENERAL /api/listings/photos LowercaseGet405Test | response.Body = {response.Body}");
+        context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos LowercaseGet405Test | response.Body = {response.Body}");
     }
 
     [Fact]
@@ -31,6 +32,7 @@ public class GeneralHttpTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "1" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "GETGET";
@@ -39,28 +41,29 @@ public class GeneralHttpTests
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, POST", response.Headers["Allow"]);
+        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
 
-        context.Logger.LogDebug($"GENERAL /api/listings/photos GetGet405Test | response.Body = {response.Body}");
+        context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos GetGet405Test | response.Body = {response.Body}");
     }
 
     [Fact]
-    public async Task Delete405Test()
+    public async Task Put405Test()
     {
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "1" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
-        request.RequestContext.Http.Method = "DELETE";
+        request.RequestContext.Http.Method = "PUT";
 
         var response = await function.FunctionHandler(request, context);
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, POST", response.Headers["Allow"]);
+        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
 
-        context.Logger.LogDebug($"GENERAL /api/listings/photos Delete405Test | response.Body = {response.Body}");
+        context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos Delete405Test | response.Body = {response.Body}");
     }
 
     [Fact]
@@ -69,6 +72,7 @@ public class GeneralHttpTests
         var function = new Function();
         var context = new TestLambdaContext();
         var request = new APIGatewayHttpApiV2ProxyRequest();
+        request.PathParameters = new Dictionary<string, string> { { "listingId", "1" } };
         request.RequestContext = new();
         request.RequestContext.Http = new();
         request.RequestContext.Http.Method = "";
@@ -77,9 +81,9 @@ public class GeneralHttpTests
         Assert.NotNull(response);
 
         Assert.Equal(405, response.StatusCode);
-        Assert.Equal("GET, POST", response.Headers["Allow"]);
+        Assert.Equal("GET, PATCH, DELETE", response.Headers["Allow"]);
 
-        context.Logger.LogDebug($"GENERAL /api/listings/photos Blank405Test | response.Body = {response.Body}");
+        context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos Blank405Test | response.Body = {response.Body}");
     }
 
     [Fact]
@@ -94,6 +98,6 @@ public class GeneralHttpTests
 
         Assert.Equal(400, response.StatusCode);
 
-        context.Logger.LogDebug($"GENERAL /api/listings/photos UninitializedRequestTest | response.Body = {response.Body}");
+        context.Logger.LogDebug($"GENERAL /api/listings/{{listingId}}/photos UninitializedRequestTest | response.Body = {response.Body}");
     }
 }
