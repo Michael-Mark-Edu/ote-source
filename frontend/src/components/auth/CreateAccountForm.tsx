@@ -19,6 +19,10 @@ type CreateAccountFormProps = {
   serverError?: string | null;
 };
 
+function isOitEmail(email: string) {
+  return email.trim().toLowerCase().endsWith("@oit.edu");
+}
+
 export default function CreateAccountForm({
   onSubmit,
   onBackToLogin,
@@ -27,19 +31,15 @@ export default function CreateAccountForm({
 }: CreateAccountFormProps) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
-
-  const [schoolId, setSchoolId] = useState<number>(36);
-
+  const [schoolId, setSchoolId] = useState(0);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [error, setError] = useState<string | null>(null);
 
-  const emailOk = email.includes("@") && email.includes(".");
+  const emailOk = isOitEmail(email);
   const usernameOk = username.trim().length >= 3;
 
   const firstOk = firstName.trim().length >= 1;
@@ -50,10 +50,20 @@ export default function CreateAccountForm({
 
   const schoolOk = Number.isFinite(schoolId) && schoolId > 0;
 
+  const emailInvalid = email.trim().length > 0 && !emailOk;
+  const usernameInvalid = username.trim().length > 0 && !usernameOk;
+  const passwordTooShort = password.length > 0 && !passwordOk;
+  const confirmPasswordMismatch = confirmPassword.length > 0 && !passwordsMatch;
+
   const canSubmit = emailOk && usernameOk && firstOk && lastOk && passwordOk && passwordsMatch && schoolOk;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!emailOk) {
+      setError("Please use your Oregon Tech email address ending in @oit.edu.");
+      return;
+    }
 
     if (!passwordsMatch) {
       setError("Passwords do not match.");
@@ -64,7 +74,9 @@ export default function CreateAccountForm({
       setError("Please fill all required fields and password (6+ chars).");
       return;
     }
+
     setError(null);
+
     onSubmit?.({
       emailAddress: email.trim(),
       username: username.trim(),
@@ -78,12 +90,15 @@ export default function CreateAccountForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-
       {/* Email */}
       <div className="space-y-1">
-        <label className="text-sm font-medium text-gray-700" htmlFor="createEmail">
+        <label
+          className="text-sm font-medium text-gray-700"
+          htmlFor="createEmail"
+        >
           Email
         </label>
+
         <input
           id="createEmail"
           type="email"
@@ -94,16 +109,30 @@ export default function CreateAccountForm({
             if (error) setError(null);
           }}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          placeholder="you@example.com"
+          placeholder="you@oit.edu"
           required
         />
+
+        <p className="text-xs text-gray-500">
+          Use your Oregon Tech email address.
+        </p>
+
+        {emailInvalid && (
+          <p className="text-xs text-red-600">
+            Email must end with @oit.edu.
+          </p>
+        )}
       </div>
 
       {/* Username */}
       <div className="space-y-1">
-        <label className="text-sm font-medium text-gray-700" htmlFor="createUsername">
+        <label
+          className="text-sm font-medium text-gray-700"
+          htmlFor="createUsername"
+        >
           Username
         </label>
+
         <input
           id="createUsername"
           type="text"
@@ -117,14 +146,24 @@ export default function CreateAccountForm({
           placeholder="username"
           required
         />
+
+        {usernameInvalid && (
+          <p className="text-xs text-red-600">
+            Username must be at least 3 characters.
+          </p>
+        )}
       </div>
 
       {/* Names */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700" htmlFor="firstName">
+          <label
+            className="text-sm font-medium text-gray-700"
+            htmlFor="firstName"
+          >
             First
           </label>
+
           <input
             id="firstName"
             type="text"
@@ -141,9 +180,13 @@ export default function CreateAccountForm({
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700" htmlFor="middleName">
-            Middle (optional)
+          <label
+            className="text-sm font-medium text-gray-700"
+            htmlFor="middleName"
+          >
+            Middle
           </label>
+
           <input
             id="middleName"
             type="text"
@@ -154,14 +197,18 @@ export default function CreateAccountForm({
               if (error) setError(null);
             }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            placeholder="Middle"
+            placeholder="Optional"
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700" htmlFor="lastName">
+          <label
+            className="text-sm font-medium text-gray-700"
+            htmlFor="lastName"
+          >
             Last
           </label>
+
           <input
             id="lastName"
             type="text"
@@ -180,9 +227,13 @@ export default function CreateAccountForm({
 
       {/* School */}
       <div className="space-y-1">
-        <label className="text-sm font-medium text-gray-700" htmlFor="createSchool">
-          School
+        <label
+          className="text-sm font-medium text-gray-700"
+          htmlFor="createSchool"
+        >
+          Campus
         </label>
+
         <select
           id="createSchool"
           value={schoolId}
@@ -191,9 +242,18 @@ export default function CreateAccountForm({
             if (error) setError(null);
           }}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          required
         >
-          <option value={36}>Oregon Tech</option>
+          <option value={0}>Select a campus</option>
+          <option value={36}>Oregon Tech Portland-Metro</option>
+          <option value={36}>Oregon Tech Klamath Falls</option>
         </select>
+
+        {!schoolOk && schoolId === 0 && (
+          <p className="text-xs text-gray-500">
+            Select your Oregon Tech campus.
+          </p>
+        )}
       </div>
 
       {/* Password */}
@@ -208,6 +268,12 @@ export default function CreateAccountForm({
         autoComplete="new-password"
       />
 
+      {passwordTooShort && (
+        <p className="text-xs text-red-600">
+          Password must be at least 6 characters.
+        </p>
+      )}
+
       <PasswordInput
         id="confirmPassword"
         label="Confirm Password"
@@ -219,6 +285,10 @@ export default function CreateAccountForm({
         autoComplete="new-password"
       />
 
+      {confirmPasswordMismatch && (
+        <p className="text-xs text-red-600">Passwords do not match.</p>
+      )}
+
       {/* Error Message */}
       <FormError message={serverError ?? error} />
 
@@ -226,9 +296,13 @@ export default function CreateAccountForm({
         <button
           type="submit"
           disabled={!canSubmit || isSubmitting}
-          className="w-full rounded-lg bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Create account
+          {isSubmitting
+            ? "Creating account..."
+            : canSubmit
+              ? "Create account"
+              : "Complete required fields"}
         </button>
 
         <button

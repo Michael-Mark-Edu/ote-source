@@ -12,11 +12,11 @@ export default function SiteFooter() {
             <p className="text-med text-gray-300">
               Open Textbook Exchange
               <br />
-              Portland, OR
+              Wilsonville, OR
+              <br />
+              27500 SW Parkway Ave
               <br />
               main@opentextbookexchange.shop
-              <br />
-              (012) 345-6789
             </p>
           </div>
 

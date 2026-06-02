@@ -15,6 +15,13 @@ export type BookListingGetDto = {
   isbn: string;
 };
 
+export type ListingPhotoDto = {
+  listingPhotoId: number;
+  photoIndex: number;
+  photoUrl: string;
+  createdAt: string;
+};
+
 export async function createListing(dto: BookListingPostDto): Promise<BookListingGetDto> {
   const res = await fetch("/api/listings", {
     method: "POST",
@@ -49,38 +56,67 @@ export async function getListingById(listingId: number | string): Promise<BookLi
   return (await res.json()) as BookListingGetDto;
 }
 
-export type ListingImageGetDto = {
-  id: number;
-  listingId: number;
-  imageUrl: string;
-  s3Key?: string;
-  createdAt?: string;
-};
-
-export async function uploadListingImages(
-  listingId: number | string,
-  files: File[]
-): Promise<ListingImageGetDto[]> {
-  if (files.length === 0) {
-    return [];
-  }
-
-  const formData = new FormData();
-
-  files.forEach((file) => {
-    formData.append("images", file);
-  });
-
-  const res = await fetch(`/api/listings/${listingId}/images`, {
-    method: "POST",
+export async function getListingPhotos(
+  listingId: number | string
+): Promise<ListingPhotoDto[]> {
+  const res = await fetch(`/api/listings/${listingId}/photos`, {
     credentials: "include",
-    body: formData,
   });
 
   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg || "Failed to upload listing images");
+    throw new Error(msg || "Failed to load listing photos");
   }
 
-  return (await res.json()) as ListingImageGetDto[];
+  return (await res.json()) as ListingPhotoDto[];
+}
+
+export async function uploadListingPhoto(
+  listingId: number | string,
+  file: File
+): Promise<ListingPhotoDto> {
+  const res = await fetch(`/api/listings/${listingId}/photos`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+    },
+    body: file,
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || "Failed to upload listing photo");
+  }
+
+  return (await res.json()) as ListingPhotoDto;
+}
+
+export async function uploadListingPhotos(
+  listingId: number | string,
+  files: File[]
+): Promise<ListingPhotoDto[]> {
+  const uploadedPhotos: ListingPhotoDto[] = [];
+
+  for (const file of files) {
+    const uploadedPhoto = await uploadListingPhoto(listingId, file);
+    uploadedPhotos.push(uploadedPhoto);
+  }
+
+  return uploadedPhotos;
+}
+
+export async function deleteListingPhoto(
+  listingId: number | string,
+  photoIndex: number
+): Promise<void> {
+  const res = await fetch(`/api/listings/${listingId}/photos/${photoIndex}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || "Failed to delete listing photo");
+  }
 }

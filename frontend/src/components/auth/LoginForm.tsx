@@ -25,6 +25,11 @@ export default function LoginForm({
     const passwordOk = password.length >= 6;
     const canSubmit = usernameOk && passwordOk;
 
+    const displayError =
+    serverError === "User not found."
+        ? "Invalid username or password."
+        : serverError ?? error;
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
@@ -75,7 +80,7 @@ export default function LoginForm({
                 />
             </div>
 
-            <FormError message={serverError ?? error} />
+            <FormError message={displayError} />
 
             {/* Buttons */}
             <div className="space-y-2 pt-2">

@@ -10,7 +10,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <AuthProvider>
-      <div className="min-h-dvh bg-gray-400">
+      <div className="min-h-dvh bg-amber-50">
         <SiteHeader />
         <Outlet />
         <SiteFooter />

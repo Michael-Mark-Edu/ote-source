@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { FlagIcon } from '@heroicons/react/24/outline'
+import { getUserById } from '../../api/users'
 
 // hypothetical public profile data model from the backend
 type PublicProfile = {
@@ -34,11 +35,6 @@ const mockProfile: PublicProfile = {
   averageRating: 4.6,
   reviewCount: 2,
 }
-
-// temp mock review data
-const mockReviews: UserReview[] = [
-  
-]
 
 // converts backend dateStrings into readable date format
 function formatDate(dateString: string) {
@@ -81,17 +77,57 @@ function StarRating({ rating, maxRating = 5, size = 'md' }: StarRatingProps) {
   )
 }
 
+function getReviewsStorageKey(userId: string) {
+  return `ote_profile_reviews_${userId}`
+}
+
+function loadStoredReviews(userId: string): UserReview[] {
+  const storedReviews = localStorage.getItem(getReviewsStorageKey(userId))
+
+  if (!storedReviews) {
+    return []
+  }
+
+  try {
+    return JSON.parse(storedReviews) as UserReview[]
+  } catch {
+    return []
+  }
+}
+
+function saveStoredReviews(userId: string, reviews: UserReview[]) {
+  localStorage.setItem(getReviewsStorageKey(userId), JSON.stringify(reviews))
+}
+
 export default function ProfilePage() {
   const { userId } = useParams({ from: '/users/$userId' })
+  const [username, setUsername] = useState(`User #${userId}`)
 
   const profile = {
     ...mockProfile,
     id: Number(userId),
-    displayName: `User #${userId}`,
+    displayName: username,
   }
 
+  useEffect(() => {
+  async function loadUser() {
+    try {
+      const user = await getUserById(Number(userId))
+      setUsername(user.username)
+    } catch (error) {
+      console.warn('Failed to load profile username:', error)
+      setUsername(`User #${userId}`)
+    }
+  }
+
+  loadUser()
+}, [userId])
+
   // review local storage until backend endpoint is ready
-  const [reviews, setReviews] = useState<UserReview[]>(mockReviews)
+  const [reviews, setReviews] = useState<UserReview[]>(() => loadStoredReviews(userId))
+  useEffect(() => {
+    setReviews(loadStoredReviews(userId))
+  }, [userId])
 
   // stores the current review form values.
   const [selectedRating, setSelectedRating] = useState(5)
@@ -125,7 +161,10 @@ export default function ProfilePage() {
       createdAt: new Date().toISOString(),
     }
 
-    setReviews([newReview, ...reviews])
+    const updatedReviews = [newReview, ...reviews]
+
+    setReviews(updatedReviews)
+    saveStoredReviews(userId, updatedReviews)
     setSelectedRating(5)
     setComment('')
   }
@@ -151,25 +190,14 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-blue-50">
       <main className="mx-auto max-w-3xl px-12 py-8">
-        <section className="mb-6 flex flex-col gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:flex-row md:items-center">
-          {/* public profile header */}
-          <div>
-            <h1 className="mb-2 text-3xl font-bold text-gray-900">
+        <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        {/* public profile header */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="mb-2 wrap-break-word text-3xl font-bold text-gray-900">
               {profile.displayName}
-
-              <button
-                type="button"
-                onClick={() => {
-                  setShowReportForm(true)
-                  setReportSubmitted(false)
-                }}
-                className="mt-4 ml-80 inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50"
-              >
-                <FlagIcon className="h-5 w-5" aria-hidden="true" />
-                <span>Report Account</span>
-              </button>
             </h1>
 
             <p className="mb-4 max-w-2xl text-gray-600">{profile.bio}</p>
@@ -186,7 +214,20 @@ export default function ProfilePage() {
               </span>
             </div>
           </div>
-        </section>
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowReportForm(true)
+              setReportSubmitted(false)
+            }}
+            className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50"
+          >
+            <FlagIcon className="h-5 w-5" aria-hidden="true" />
+            <span>Report Account</span>
+          </button>
+        </div>
+      </section>
 
         {/* review form section */}
         <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -271,6 +312,12 @@ export default function ProfilePage() {
           <h2 className="mb-4 text-xl font-semibold text-gray-900">Reviews</h2>
 
           <div className="space-y-4">
+            {reviews.length === 0 && (
+              <p className="text-sm text-gray-600">
+                This user does not have any reviews yet.
+              </p>
+            )}
+
             {reviews.map((review) => (
               <article
                 key={review.id}
@@ -411,6 +458,6 @@ export default function ProfilePage() {
           Report submitted. Thank you for helping keep the marketplace safe.
         </div>
       )}
-    </>
+    </div>
   )
 }
