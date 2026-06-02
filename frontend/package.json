@@ -15,6 +15,7 @@
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-router": "^1.139.3",
     "@tanstack/router-devtools": "^1.139.3",
+    "heroicons": "^2.2.0",
     "lucide": "^0.564.0",
     "lucide-react": "^0.564.0",
     "react": "^19.2.4",

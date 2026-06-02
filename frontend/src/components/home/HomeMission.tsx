@@ -5,13 +5,11 @@ export default function HomeMission() {
         <div>
           <h1 className="font-bold text-2xl mb-4">Mission Statement</h1>
           <p className="text-gray-600">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras volutpat non velit eget aliquet.
-            Phasellus tristique viverra enim vitae ultrices. Ut fermentum nulla et nisi commodo aliquet.
-            Aenean dictum odio convallis neque tempor feugiat. Curabitur varius magna odio. Curabitur fringilla
-            iaculis leo et consectetur. Etiam ultrices pulvinar nunc, non tristique neque tempus sed. Etiam
-            aliquam, mi sit amet sagittis semper, dui eros sollicitudin augue, non blandit arcu tellus vitae justo.
-            In at tortor laoreet, auctor mi eu, tincidunt turpis. Nullam orci nisl, consequat eget volutpat feugiat,
-            bibendum quis nunc.
+            Our mission is to create a sustainable and affordable textbook marketplace 
+            for students. We aim to reduce the financial burden of education by facilitating 
+            the buying, selling, and trading of textbooks within local communities. By 
+            connecting students directly, we strive to promote a more eco-friendly 
+            approach to textbook usage and foster a sense of community among learners.
           </p>
         </div>
       </div>
