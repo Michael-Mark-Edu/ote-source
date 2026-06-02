@@ -12,6 +12,9 @@ public class ListingPhotoEntity
     [JsonPropertyName("listingPhotoId")]
     public int ListingPhotoId { get; set; }
 
+    [JsonPropertyName("photoIndex")]
+    public int PhotoIndex { get; set; }
+
     [JsonPropertyName("photoUrl")]
     public string PhotoUrl { get; set; } = null!;
 
