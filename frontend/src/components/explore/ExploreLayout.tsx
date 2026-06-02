@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import ExploreFiltersSidebar from "./ExploreFiltersSidebar";
 import { DEFAULT_FILTERS, type ExploreFilters, type ListingCondition } from "./ExploreFiltersModel";
 import ListingCard from "../listings/ListingCard";
-import { getListings } from "../../api/listings";
+import { getListings, getListingPhotos } from "../../api/listings";
 import type { BookListingGetDto } from "../../api/listings";
 import { getBookByIsbn } from "../../api/books";
 import type { BookGetDto } from "../../api/books";
@@ -44,6 +44,9 @@ export default function ExploreLayout() {
   const [booksByIsbn, setBooksByIsbn] = useState<Record<string, BookGetDto | null>>({});
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ExploreFilters>(DEFAULT_FILTERS);
+  const [photoUrlsByListingId, setPhotoUrlsByListingId] = useState<
+    Record<string, string | null>
+  >({});
 
   // Load listings
   useEffect(() => {
@@ -86,8 +89,48 @@ export default function ExploreLayout() {
         return next;
       });
     })();
-    
-  });
+  }, [listingDtos, booksByIsbn]);
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadListingPhotos() {
+    const photoEntries = await Promise.all(
+      listingDtos.map(async (listing) => {
+        try {
+          const photos = await getListingPhotos(listing.bookListingId);
+          const firstPhoto = photos[0];
+
+          return [
+            String(listing.bookListingId),
+            firstPhoto?.photoUrl ?? null,
+          ] as const;
+        } catch (error) {
+          console.warn(
+            `Failed to load photos for listing ${listing.bookListingId}:`,
+            error
+          );
+
+          return [String(listing.bookListingId), null] as const;
+        }
+      })
+    );
+
+    if (!cancelled) {
+      setPhotoUrlsByListingId(Object.fromEntries(photoEntries));
+    }
+  }
+
+  if (listingDtos.length > 0) {
+    loadListingPhotos();
+  } else {
+    setPhotoUrlsByListingId({});
+  }
+
+  return () => {
+    cancelled = true;
+  };
+}, [listingDtos]);
 
   // Build card models
   const cards: CardModel[] = useMemo(() => {
@@ -103,10 +146,10 @@ export default function ExploreLayout() {
         price: l.price ? Number(l.price) : 0,
         condition: l.condition,
         purchaseType: l.purchaseType,
-        imageUrl: null,
+        imageUrl: photoUrlsByListingId[String(l.bookListingId)] ?? null,
       };
     });
-  }, [listingDtos, booksByIsbn]);
+  }, [listingDtos, booksByIsbn, photoUrlsByListingId]);
 
   const duplicateIsbns = useMemo(() => {
   const isbnCounts = new Map<string, number>();

@@ -1,10 +1,10 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getListingById } from "../../api/listings";
-import type { BookListingGetDto } from "../../api/listings";
+import { getListingById, getListingPhotos, type ListingPhotoDto, type BookListingGetDto } from "../../api/listings";
 import { getBookByIsbn } from "../../api/books";
 import { getUserById } from "../../api/users";
 import { isListingSaved, toggleSavedListing } from "./savedListings";
+
 
 type ListingDetails = {
   id: string;
@@ -48,16 +48,17 @@ function toListingDetails(
 
 export default function ListingPage() {
   const { listingId } = useParams({ from: "/listings/$listingId" });
-
   const [listing, setListing] = useState<ListingDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showSellerEmail, setShowSellerEmail] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [photos, setPhotos] = useState<ListingPhotoDto[]>([]);
 
   useEffect(() => {
     setListing(null);
     setError(null);
     setShowSellerEmail(false);
+    setPhotos([]);
 
     (async () => {
       try {
@@ -90,6 +91,14 @@ export default function ListingPage() {
           sellerEmail = seller.emailAddress;
         } catch (sellerError) {
           console.warn("Failed to load seller information:", sellerError);
+        }
+
+        try {
+          const listingPhotos = await getListingPhotos(dto.bookListingId);
+          setPhotos(listingPhotos);
+        } catch (photoError) {
+          console.warn("Failed to load listing photos:", photoError);
+          setPhotos([]);
         }
 
         setListing(toListingDetails(dto, bookTitle, bookDescription, authors, publishers, sellerUsername, sellerEmail));
@@ -170,8 +179,16 @@ export default function ListingPage() {
           <div className="grid gap-6 p-5 lg:grid-cols-[minmax(0,2fr)_320px]">
             {/* Left side */}
             <div>
-              <div className="flex min-h-[420px] items-center justify-center border border-gray-300 bg-gray-100">
-                <span className="text-sm text-gray-500">No image uploaded yet</span>
+              <div className="flex h-[420px] items-center justify-center border border-gray-300 bg-gray-100">
+                {photos.length > 0 ? (
+                  <img
+                    src={photos[0].photoUrl}
+                    alt={`Listing photo ${photos[0].photoIndex}`}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <span className="text-sm text-gray-500">No image uploaded yet</span>
+                )}
               </div>
 
               <section className="mt-6">

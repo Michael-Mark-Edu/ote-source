@@ -1,37 +1,37 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { PhotoIcon } from '@heroicons/react/24/solid'
-import { ChevronDownIcon } from '@heroicons/react/16/solid'
-import { useMemo, useState, useContext } from "react";
-import { AuthContext } from '../components/auth/AuthContext';
-import { getBookByIsbn, createBook, type BookPostDto } from "../api/books";
-import { createListing, uploadListingImages, type BookListingPostDto } from "../api/listings";
+    import { createFileRoute, useNavigate } from '@tanstack/react-router'
+    import { PhotoIcon } from '@heroicons/react/24/solid'
+    import { ChevronDownIcon } from '@heroicons/react/16/solid'
+    import { useMemo, useState, useContext } from "react";
+    import { AuthContext } from '../components/auth/AuthContext';
+    import { getBookByIsbn, createBook, type BookPostDto } from "../api/books";
+    import { createListing, uploadListingPhotos, type BookListingPostDto } from "../api/listings";
 
 
-export const Route = createFileRoute("/user_upload")({
-  component: UploadPage,
-});
+    export const Route = createFileRoute("/user_upload")({
+    component: UploadPage,
+    });
 
-type Condition = "New" | "Like New" | "Good" | "Fair" | "Poor";
+    type Condition = "New" | "Like New" | "Good" | "Fair" | "Poor";
 
-type UploadForm = {
-  campus: "Klamath Falls" | "Portland/Metro";
-  title: string;
-  author: string;
-  edition: string;
-  publishingYear: number | "";
-  isbn: string;
-  condition: Condition;
-  subject: string;
-  courseNumber: number | "";
-  description: string;
-  price: number | "";
-  purchaseType: string;
-};
+    type UploadForm = {
+    campus: "Klamath Falls" | "Portland/Metro";
+    title: string;
+    author: string;
+    edition: string;
+    publishingYear: number | "";
+    isbn: string;
+    condition: Condition;
+    subject: string;
+    courseNumber: number | "";
+    description: string;
+    price: number | "";
+    purchaseType: string;
+    };
 
-function UploadPage() {
-  const navigate = useNavigate();
+    function UploadPage() {
+    const navigate = useNavigate();
 
-  const [form, setForm] = useState<UploadForm>({
+    const [form, setForm] = useState<UploadForm>({
     campus: "Klamath Falls",
     title: "",
     author: "",
@@ -43,93 +43,105 @@ function UploadPage() {
     courseNumber: "",
     description: "",
     price: "",
-    purchaseType: "All",
-  });
+    purchaseType: "Sell",
+    });
 
-  const [files, setFiles] = useState<File[]>([]);
+    const [files, setFiles] = useState<File[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const previewUrl = useMemo(() => {
+    const previewUrl = useMemo(() => {
     if (files.length === 0) return null;
     return URL.createObjectURL(files[0]);
-  }, [files]);
+    }, [files]);
 
-  function setField<K extends keyof UploadForm>(key: K, value: UploadForm[K]) {
+    function setField<K extends keyof UploadForm>(key: K, value: UploadForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
-  }
-
-  const auth = useContext(AuthContext);
-
-  async function onSubmit(e: React.FormEvent) {
-  e.preventDefault();
-
-  if (!auth?.user) {
-    alert("You must be logged in to create a listing.");
-    return;
-  }
-
-  const userId = Number(auth.user.id);
-  if (!Number.isFinite(userId) || userId <= 0) {
-    alert("Invalid user id. Please sign out and sign in again.");
-    return;
-  }
-
-  if (!form.isbn.trim()) {
-    alert("ISBN is required.");
-    return;
-  }
-
-  try {
-    // Verify book exists by ISBN. If not, create it.
-    const existingBook = await getBookByIsbn(form.isbn.trim());
-
-    if (!existingBook) {
-      if (!form.title.trim() || !form.author.trim()) {
-        alert("Title and Author are required to create a new book record.");
-        return;
-      }
-
-      const bookDto: BookPostDto = {
-        isbn: form.isbn.trim(),
-        title: form.title.trim(),
-        authors: form.author.trim(),
-        publishers: "Unknown",  // TODO: add a publishers field to form later
-        description: form.description.trim() ? form.description.trim() : null,
-        publishDate:
-          form.publishingYear === ""
-            ? null
-            : `${form.publishingYear}-01-01T00:00:00Z`,
-      };
-
-      await createBook(bookDto);
     }
 
-    // Create the listing
-    const dto: BookListingPostDto = {
-    condition: form.condition,
-    purchaseType: form.purchaseType.trim().length ? "Trade" : "Sell",
-    price: form.price === "" ? null : String(form.price),
-    userId,
-    isbn: form.isbn.trim(),
-    };
+    const auth = useContext(AuthContext);
 
-    const createdListing = await createListing(dto);
+    async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
 
-    // Upload images after the listing has been created
-    // The backend handles sending these images to S3
-    await uploadListingImages(createdListing.bookListingId, files);
+    if (isSubmitting) {
+    return;
+    }
 
-    // Navigate to the new listing page
-    navigate({
-    to: "/listings/$listingId",
-    params: { listingId: String(createdListing.bookListingId) },
-    });
+    setIsSubmitting(true);
+
+    if (!auth?.user) {
+    alert("You must be logged in to create a listing.");
+    setIsSubmitting(false);
+    return;
+    }
+
+    const userId = Number(auth.user.id);
+    if (!Number.isFinite(userId) || userId <= 0) {
+    alert("Invalid user id. Please sign out and sign in again.");
+    setIsSubmitting(false);
+    return;
+    }
+
+    if (!form.isbn.trim()) {
+    alert("ISBN is required.");
+    setIsSubmitting(false);
+    return;
+    }
+
+    try {
+        // Verify book exists by ISBN. If not, create it.
+        const existingBook = await getBookByIsbn(form.isbn.trim());
+
+        if (!existingBook) {
+            if (!form.title.trim() || !form.author.trim()) {
+            alert("Title and Author are required to create a new book record.");
+            return;
+            }
+
+            const bookDto: BookPostDto = {
+            isbn: form.isbn.trim(),
+            title: form.title.trim(),
+            authors: form.author.trim(),
+            publishers: "Unknown",  // TODO: add a publishers field to form later
+            description: form.description.trim() ? form.description.trim() : null,
+            publishDate:
+                form.publishingYear === ""
+                ? null
+                : `${form.publishingYear}-01-01T00:00:00Z`,
+            };
+
+            await createBook(bookDto);
+        }
+
+        // Create the listing
+        const dto: BookListingPostDto = {
+        condition: form.condition,
+        purchaseType: form.purchaseType,
+        price: form.price === "" ? null : String(form.price),
+        userId,
+        isbn: form.isbn.trim(),
+        };
+
+        const createdListing = await createListing(dto);
+
+        // Upload images after the listing has been created
+        // The backend handles sending these images to S3
+        await uploadListingPhotos(createdListing.bookListingId, files);
+
+        // Navigate to the new listing page
+        navigate({
+        to: "/listings/$listingId",
+        params: { listingId: String(createdListing.bookListingId) },
+        });
     } catch (err) {
         console.error(err);
         alert(err instanceof Error ? err.message : "Failed to create listing");
+    } finally {
+        setIsSubmitting(false);
     }
-}
+    }
 
-  return (
+    return (
         <main className="flex flex-wrap justify-center-safe items-center-safe bg-white">
             <div className="mx-auto max-w-2xl px-4 py-8">
                 <h1 className="text-2xl font-semibold text-gray-900">Upload Listing</h1>
@@ -153,7 +165,7 @@ function UploadPage() {
                                     className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-30 mb-3 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
                                 >
                                     <option>Klamath Falls</option>
-                                    <option>Portland/Metro</option>
+                                    <option>Portland-Metro</option>
                                 </select>
                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2  text-gray-700">
                                     <ChevronDownIcon
@@ -453,10 +465,15 @@ function UploadPage() {
 
                         <button
                             type="submit"
-                            className="rounded-md bg-blue-500 px-15 py-2 text-m font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-                        >
-                            Publish
-                        </button>
+                            disabled={isSubmitting}
+                            className={`rounded-md px-15 py-2 text-m font-semibold text-white transition ${
+                                isSubmitting
+                                ? "cursor-not-allowed bg-blue-300"
+                                : "bg-blue-500 hover:bg-blue-600 active:scale-95"
+                            } focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500`}
+                            >
+                            {isSubmitting ? "Publishing..." : "Publish"}
+                            </button>
                     </div>
                 </form>
             </div>   

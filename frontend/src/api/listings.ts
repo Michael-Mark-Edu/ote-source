@@ -16,8 +16,9 @@ export type BookListingGetDto = {
 };
 
 export type ListingPhotoDto = {
-  url: string;
-  index: number;
+  listingPhotoId: number;
+  photoIndex: number;
+  photoUrl: string;
   createdAt: string;
 };
 
@@ -55,42 +56,6 @@ export async function getListingById(listingId: number | string): Promise<BookLi
   return (await res.json()) as BookListingGetDto;
 }
 
-export type ListingImageGetDto = {
-  id: number;
-  listingId: number;
-  imageUrl: string;
-  s3Key?: string;
-  createdAt?: string;
-};
-
-export async function uploadListingImages(
-  listingId: number | string,
-  files: File[]
-): Promise<ListingImageGetDto[]> {
-  if (files.length === 0) {
-    return [];
-  }
-
-  const formData = new FormData();
-
-  files.forEach((file) => {
-    formData.append("images", file);
-  });
-
-  const res = await fetch(`/api/listings/${listingId}/images`, {
-    method: "POST",
-    credentials: "include",
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg || "Failed to upload listing images");
-  }
-
-  return (await res.json()) as ListingImageGetDto[];
-}
-
 export async function getListingPhotos(
   listingId: number | string
 ): Promise<ListingPhotoDto[]> {
@@ -110,14 +75,13 @@ export async function uploadListingPhoto(
   listingId: number | string,
   file: File
 ): Promise<ListingPhotoDto> {
-  const formData = new FormData();
-
-  formData.append("photo", file);
-
   const res = await fetch(`/api/listings/${listingId}/photos`, {
     method: "POST",
     credentials: "include",
-    body: formData,
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+    },
+    body: file,
   });
 
   if (!res.ok) {
@@ -126,6 +90,20 @@ export async function uploadListingPhoto(
   }
 
   return (await res.json()) as ListingPhotoDto;
+}
+
+export async function uploadListingPhotos(
+  listingId: number | string,
+  files: File[]
+): Promise<ListingPhotoDto[]> {
+  const uploadedPhotos: ListingPhotoDto[] = [];
+
+  for (const file of files) {
+    const uploadedPhoto = await uploadListingPhoto(listingId, file);
+    uploadedPhotos.push(uploadedPhoto);
+  }
+
+  return uploadedPhotos;
 }
 
 export async function deleteListingPhoto(
