@@ -5,32 +5,28 @@ using System.Text.Json.Serialization;
 
 namespace OTE.Data.EFCore.Dtos;
 
-/// <summary>Output type for `ListingPhotoPostDto`.</summary>
-public class ListingPhotoDtoOutput
-{
-    public required ListingPhotoEntity ListingPhotoEntity { get; set; }
-}
-
 /// <summary>`IPostDto` for inserting from a POST request.</summary>
-public class ListingPhotoPostDto : IPostDto<ListingPhotoDtoOutput>
+public class ListingPhotoPostDto : IPostDto<ListingPhotoEntity>
 {
-    [JsonPropertyName("listingPhotoId")]
-    public int ListingPhotoId { get; set; }
+    [JsonPropertyName("photoIndex")]
+    public int PhotoIndex { get; set; }
+
+    [JsonPropertyName("photoData")]
+    public string PhotoData { get; set; } = null!;
 
     [JsonPropertyName("bookListingId")]
     public int BookListingId { get; set; }
 
-    public ListingPhotoDtoOutput Map()
+    public ListingPhotoEntity Map()
     {
-        var listingPhotoEntity = new ListingPhotoEntity
+        return new ListingPhotoEntity
         {
             ListingPhotoId = 0,
-            BookListingId = 0,
-        };
-
-        return new ListingPhotoDtoOutput
-        {
-            ListingPhotoEntity = listingPhotoEntity
+            PhotoIndex = PhotoIndex,
+            PhotoUrl = "",
+            CreatedAt = DateTime.UtcNow,
+            DeletedAt = null,
+            BookListingId = BookListingId,
         };
     }
 }

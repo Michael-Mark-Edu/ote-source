@@ -1,12 +1,16 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Annotations;
+using Amazon.S3;
+using Amazon.S3.Model;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using OTE.Common;
 using OTE.Common.Api;
 using OTE.Data.EFCore.Contexts;
 using OTE.Data.EFCore.Dtos;
+using OTE.Data.EFCore.Entities;
+using System.Text;
 using System.Text.Json;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -125,31 +129,137 @@ public class Function
     {
         using var oteContext = new OteContext();
 
-        var foundListing = await oteContext
+        var listing = await oteContext
             .BookListings
-            .Include(e => e.Seller)
             .Where(e => e.BookListingId == listingId)
             .Where(e => e.DeletedAt == null)
             .FirstOrDefaultAsync();
 
-        if (foundListing == null)
+        if (listing == null)
+        {
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 404,
-                Body = $"{{\"error\":\"Listing with listingId '{listingId}' does not exist.\"}}",
+                Body = $"{{\"error\":\"Listing '{listingId}' does not exist.\"}}",
                 Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
             };
+        }
 
-        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, foundListing.UserId);
+        int userId = listing.UserId;
+
+        var validateCookieResult = await ApiFunctions.ValidateCookiesUserAction(request, oteContext, userId);
 
         if (validateCookieResult != null)
             return validateCookieResult;
 
-        foundListing.DeletedAt = DateTime.UtcNow;
+        string fileExtension;
+        try
+        {
+            switch (request.Headers["Content-Type"])
+            {
+                case "image/png":
+                    fileExtension = ".png";
+                    break;
+                case "image/jpeg":
+                    fileExtension = ".jpg";
+                    break;
+                default:
+                    return new APIGatewayHttpApiV2ProxyResponse
+                    {
+                        StatusCode = 400,
+                        Body = $"{{\"error\":\"Content-Type {request.Headers["Content-Type"]} invalid.\"}}",
+                        Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+                    };
+            }
+        }
+        catch (NullReferenceException)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Header Content-Type expected but not given.\"}}",
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "application/json" }
+                }
+            };
+        }
 
-        var updatedListingEntry = oteContext
-            .BookListings
-            .Update(foundListing);
+        byte[] data;
+        if (request.IsBase64Encoded)
+        {
+            data = Convert.FromBase64String(request.Body);
+        }
+        else
+        {
+            data = Encoding.UTF8.GetBytes(request.Body);
+        }
+
+        var last = await oteContext
+            .ListingPhotos
+            .Where(e => e.BookListingId == listingId)
+            .OrderByDescending(e => e.PhotoIndex)
+            .FirstOrDefaultAsync();
+
+        int nextIndex;
+        if (last == null)
+        {
+            nextIndex = 1;
+        }
+        else
+        {
+            nextIndex = last.PhotoIndex + 1;
+        }
+
+        var dupe = await oteContext
+            .ListingPhotos
+            .Where(e => e.BookListingId == listingId)
+            .Where(e => e.PhotoIndex == nextIndex)
+            .FirstOrDefaultAsync();
+
+        if (dupe != null)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Listing photo with index {nextIndex} already exists for listing {listingId}.\"}}",
+                Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+            };
+        }
+
+        var key = $"{listingId}-{nextIndex}{fileExtension}";
+
+        var s3 = new AmazonS3Client(Amazon.RegionEndpoint.USWest2);
+        using (var stream = new MemoryStream(data))
+        {
+            var response = await s3.PutObjectAsync(new PutObjectRequest
+            {
+                BucketName = "ote-listing-photos",
+                Key = key,
+                InputStream = stream
+            });
+
+            if ((int)response.HttpStatusCode != 200)
+            {
+                context.Logger.LogError("S3 upload did not return 200");
+                return new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 500,
+                    Body = "Internal Server Error",
+                    Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+                };
+            }
+        }
+
+        var listingPhotoEntity = new ListingPhotoEntity
+        {
+            PhotoIndex = nextIndex,
+            PhotoUrl = $"https://ote-listing-photos.s3.us-west-2.amazonaws.com/{key}",
+            BookListingId = listingId
+        };
+
+        var insertedPhotoEntry = await oteContext
+            .ListingPhotos
+            .AddAsync(listingPhotoEntity);
 
         try
         {
@@ -168,9 +278,15 @@ public class Function
             throw;
         }
 
+        var insertedPhoto = insertedPhotoEntry.Entity;
+        var photoGetDto = new ListingPhotoGetDto(insertedPhoto);
+        var photoGetDtoJson = JsonSerializer.Serialize(photoGetDto);
+
         return new APIGatewayHttpApiV2ProxyResponse
         {
-            StatusCode = 204
+            StatusCode = 200,
+            Body = photoGetDtoJson,
+            Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
         };
     }
 }
