@@ -1,0 +1,133 @@
+name: ote-workflow
+
+on: [push, pull_request]
+
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD:
+  POSTGRES_DB: ote
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Check formatting
+      run: |
+        cd backend
+        dotnet format --verify-no-changes
+
+    - name: Build project
+      run: |
+        cd backend
+        dotnet build
+
+    - name: Create secrets.json
+      run: |
+        mkdir -p ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e
+        echo '{ "ConnectionStrings:OteDb": "Host=localhost; Port=5432; Database=ote; Username=postgres; Password=postgres; Include Error Detail=true" }' > ~/.microsoft/usersecrets/7dd46374-7b55-442e-b4b3-1ae375510d4e/secrets.json
+
+    - name: Start PostgreSQL
+      continue-on-error: true
+      run: |
+        sudo systemctl start postgresql.service
+        sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
+    - name: Wait for DB
+      run: |
+        for i in {1..30}; do
+          pg_isready -h localhost -p 5432 && break
+          echo "Waiting for PostgreSQL… ($i)"
+          sleep 1
+        done
+
+    - name: Setup DB
+      run: |
+        cd backend/src/Data.EFCore
+        dotnet tool install --global dotnet-ef --version 10.0.2
+        export PATH="$PATH:/root/.dotnet/tools"
+        dotnet ef database update
+
+    - name: Populate DB
+      run: PGPASSWORD=postgres psql -U postgres -h localhost -p 5432 -d ote -f database/scripts/populate.sql
+
+    - name: Run tests
+      run: |
+        cd backend
+        dotnet test --logger trx
+
+    - name: Get test results
+      if: always()
+      run: find . -name '*.trx' -exec cat {} \;
+
+
+  frontend-upload-development:
+    needs: [backend-test]
+    if: ${{ github.event_name == 'push'
+        && github.ref == 'refs/heads/development'
+        && github.repository == 'Michael-Mark-Edu/ote-source' }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build artifacts
+      run: |
+        cd frontend
+        npx vite build --base='https://development.opentextbookexchange.shop/artifact' --outDir artifact
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v5.1.0
+      with:
+        aws-region: us-west-2
+        aws-access-key-id: ${{ secrets.AWS_DEVELOPMENT_CD_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVELOPMENT_CD_SECRET_ACCESS_KEY }}
+
+    - name: Upload build artifacts to S3
+      run: aws s3 sync frontend/artifact s3://ote-frontend-source-development/artifact --delete
+
+  frontend-upload-production:
+    needs: [backend-test]
+    if: ${{ github.event_name == 'push'
+        && github.ref == 'refs/heads/main'
+        && github.repository == 'Michael-Mark-Edu/ote-source' }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build artifacts
+      run: |
+        cd frontend
+        npx vite build --base='https://opentextbookexchange.shop/artifact' --outDir artifact
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v5.1.0
+      with:
+        aws-region: us-west-2
+        aws-access-key-id: ${{ secrets.AWS_PRODUCTION_CD_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_PRODUCTION_CD_SECRET_ACCESS_KEY }}
+
+    - name: Upload build artifacts to S3
+      run: aws s3 sync frontend/artifact s3://ote-frontend-source/artifact --delete
