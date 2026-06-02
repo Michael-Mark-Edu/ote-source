@@ -155,7 +155,7 @@ public class Function
         string fileExtension;
         try
         {
-            switch (request.Headers["Content-Type"])
+            switch (request.Headers["content-type"])
             {
                 case "image/png":
                     fileExtension = ".png";
@@ -167,7 +167,7 @@ public class Function
                     return new APIGatewayHttpApiV2ProxyResponse
                     {
                         StatusCode = 400,
-                        Body = $"{{\"error\":\"Content-Type {request.Headers["Content-Type"]} invalid.\"}}",
+                        Body = $"{{\"error\":\"Content-Type {request.Headers["content-type"]} invalid.\"}}",
                         Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
                     };
             }
@@ -177,7 +177,18 @@ public class Function
             return new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 400,
-                Body = $"{{\"error\":\"Header Content-Type expected but not given.\"}}",
+                Body = $"{{\"error\":\"Header content-type expected but not given.\"}}",
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "application/json" }
+                }
+            };
+        }
+        catch (KeyNotFoundException)
+        {
+            return new APIGatewayHttpApiV2ProxyResponse
+            {
+                StatusCode = 400,
+                Body = $"{{\"error\":\"Header content-type expected but not given.\"}}",
                 Headers = new Dictionary<string, string> {
                     { "Content-Type", "application/json" }
                 }
