@@ -1,26 +1,73 @@
+import { Link } from "@tanstack/react-router";
 import type { AccountTabKey } from "./AccountPage";
-import TabButton from "./TabButton";
+
+const baseTabClass =
+  "border-b-2 px-4 py-2 text-sm font-medium transition";
+
+const inactiveTabClass =
+  "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-900";
+
+const activeTabClass =
+  "border-blue-600 text-blue-700";
 
 export default function AccountTabs({
   activeTab,
   onChange,
+  userId,
 }: {
   activeTab: AccountTabKey;
   onChange: (tab: AccountTabKey) => void;
+  userId: number | null;
 }) {
   return (
-    <div className="flex border-b border-gray-300 gap-2">
-      <TabButton active={activeTab === "myListings"} onClick={() => onChange("myListings")}>
+    <div className="flex gap-2 border-b border-gray-300">
+      <button
+        type="button"
+        onClick={() => onChange("myListings")}
+        className={`${baseTabClass} ${
+          activeTab === "myListings" ? activeTabClass : inactiveTabClass
+        }`}
+      >
         My Listings
-      </TabButton>
+      </button>
 
-      <TabButton active={activeTab === "savedListings"} onClick={() => onChange("savedListings")}>
+      <button
+        type="button"
+        onClick={() => onChange("savedListings")}
+        className={`${baseTabClass} ${
+          activeTab === "savedListings" ? activeTabClass : inactiveTabClass
+        }`}
+      >
         Saved Listings
-      </TabButton>
+      </button>
 
-      <TabButton active={activeTab === "account"} onClick={() => onChange("account")}>
+      {userId ? (
+        <Link
+          to="/users/$userId"
+          params={{ userId: String(userId) }}
+          className={`${baseTabClass} ${inactiveTabClass}`}
+        >
+          Profile
+        </Link>
+      ) : (
+        <button
+          type="button"
+          disabled
+          className={`${baseTabClass} cursor-not-allowed border-transparent text-gray-400`}
+        >
+          Profile
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => onChange("account")}
+        className={`${baseTabClass} ${
+          activeTab === "account" ? activeTabClass : inactiveTabClass
+        }`}
+      >
         Account
-      </TabButton>
+      </button>
     </div>
   );
 }

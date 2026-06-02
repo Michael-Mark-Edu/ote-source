@@ -167,9 +167,18 @@ export default function ExploreLayout() {
       filters.purchaseType === "All" ||
       card.purchaseType === filters.purchaseType;
 
-    return matchesMinPrice && matchesMaxPrice && matchesCondition && matchesIsbn && matchesAuthor && matchesPublisher && matchesHasImage && matchesDuplicates && matchesPurchaseType;
+    const searchQuery = typeof q === "string" ? q.trim().toLowerCase() : "";
+
+    const matchesSearch =
+      searchQuery === "" ||
+      card.title.toLowerCase().includes(searchQuery) ||
+      card.authors.toLowerCase().includes(searchQuery) ||
+      card.publishers.toLowerCase().includes(searchQuery) ||
+      card.isbn.toLowerCase().includes(searchQuery);
+
+    return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesCondition && matchesIsbn && matchesAuthor && matchesPublisher && matchesHasImage && matchesDuplicates && matchesPurchaseType;
   });
-}, [cards, filters, duplicateIsbns]);
+}, [cards, filters, duplicateIsbns, q]);
 
   function handleHide(id: string) {
     setListingDtos((prev) => prev.filter((l) => String(l.bookListingId) !== id));

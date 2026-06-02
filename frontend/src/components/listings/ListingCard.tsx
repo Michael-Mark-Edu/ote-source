@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { BookmarkIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { isListingSaved, toggleSavedListing } from "./savedListings";
 
 export default function ListingCard({
   listingId,
@@ -16,6 +18,8 @@ export default function ListingCard({
   onSave?: (id: string) => void;
   onHide?: (id: string) => void;
 }) {
+  const [saved, setSaved] = useState(() => isListingSaved(listingId));
+
   return (
     <div className="relative">
       <Link
@@ -58,12 +62,22 @@ export default function ListingCard({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+
+                  toggleSavedListing(listingId);
+                  setSaved(isListingSaved(listingId));
+
                   onSave?.(listingId);
                 }}
                 className="p-1 rounded hover:bg-gray-100"
-                aria-label="Save listing"
+                aria-label={saved ? "Unsave listing" : "Save listing"}
               >
-                <BookmarkIcon className="h-8 w-8 text-gray-600 hover:text-black" />
+                <BookmarkIcon
+                  className={`h-8 w-8 ${
+                    saved
+                      ? "fill-gray-700 text-gray-700"
+                      : "text-gray-600 hover:text-black"
+                  }`}
+                />
               </button>
 
               {/* Hide Listing Icon */}

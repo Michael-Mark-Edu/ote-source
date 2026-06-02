@@ -15,6 +15,12 @@ export type BookListingGetDto = {
   isbn: string;
 };
 
+export type ListingPhotoDto = {
+  url: string;
+  index: number;
+  createdAt: string;
+};
+
 export async function createListing(dto: BookListingPostDto): Promise<BookListingGetDto> {
   const res = await fetch("/api/listings", {
     method: "POST",
@@ -83,4 +89,56 @@ export async function uploadListingImages(
   }
 
   return (await res.json()) as ListingImageGetDto[];
+}
+
+export async function getListingPhotos(
+  listingId: number | string
+): Promise<ListingPhotoDto[]> {
+  const res = await fetch(`/api/listings/${listingId}/photos`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || "Failed to load listing photos");
+  }
+
+  return (await res.json()) as ListingPhotoDto[];
+}
+
+export async function uploadListingPhoto(
+  listingId: number | string,
+  file: File
+): Promise<ListingPhotoDto> {
+  const formData = new FormData();
+
+  formData.append("photo", file);
+
+  const res = await fetch(`/api/listings/${listingId}/photos`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || "Failed to upload listing photo");
+  }
+
+  return (await res.json()) as ListingPhotoDto;
+}
+
+export async function deleteListingPhoto(
+  listingId: number | string,
+  photoIndex: number
+): Promise<void> {
+  const res = await fetch(`/api/listings/${listingId}/photos/${photoIndex}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || "Failed to delete listing photo");
+  }
 }

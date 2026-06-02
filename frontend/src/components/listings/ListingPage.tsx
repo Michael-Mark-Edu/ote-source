@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { getListingById } from "../../api/listings";
 import type { BookListingGetDto } from "../../api/listings";
 import { getBookByIsbn } from "../../api/books";
+import { getUserById } from "../../api/users";
+import { isListingSaved, toggleSavedListing } from "./savedListings";
 
 type ListingDetails = {
   id: string;
@@ -15,6 +17,8 @@ type ListingDetails = {
   purchaseType: string;
   price: string;
   userId: string;
+  sellerUsername: string;
+  sellerEmail: string;
 };
 
 function toListingDetails(
@@ -22,7 +26,9 @@ function toListingDetails(
   bookTitle = `Textbook Listing #${dto.bookListingId}`,
   bookDescription = "No description available.",
   authors = "Unknown author",
-  publishers = "Unknown publisher"
+  publishers = "Unknown publisher",
+  sellerUsername = `User #${dto.userId}`,
+  sellerEmail = ""
 ): ListingDetails {
   return {
     id: String(dto.bookListingId),
@@ -35,6 +41,8 @@ function toListingDetails(
     purchaseType: dto.purchaseType,
     price: dto.price ?? "—",
     userId: String(dto.userId),
+    sellerUsername,
+    sellerEmail,
   };
 }
 
@@ -43,19 +51,25 @@ export default function ListingPage() {
 
   const [listing, setListing] = useState<ListingDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showSellerEmail, setShowSellerEmail] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     setListing(null);
     setError(null);
+    setShowSellerEmail(false);
 
     (async () => {
       try {
         const dto = await getListingById(listingId);
+        setSaved(isListingSaved(String(dto.bookListingId)));
 
         let bookTitle = `Textbook Listing #${dto.bookListingId}`;
         let bookDescription = "No description available.";
         let authors = "Unknown author";
         let publishers = "Unknown publisher";
+        let sellerUsername = `User #${dto.userId}`;
+        let sellerEmail = "";
 
         try {
           const book = await getBookByIsbn(dto.isbn);
@@ -70,7 +84,15 @@ export default function ListingPage() {
           console.warn("Failed to load book information:", bookError);
         }
 
-        setListing(toListingDetails(dto, bookTitle, bookDescription, authors, publishers));
+        try {
+          const seller = await getUserById(dto.userId);
+          sellerUsername = seller.username;
+          sellerEmail = seller.emailAddress;
+        } catch (sellerError) {
+          console.warn("Failed to load seller information:", sellerError);
+        }
+
+        setListing(toListingDetails(dto, bookTitle, bookDescription, authors, publishers, sellerUsername, sellerEmail));
       } catch (e) {
         console.error(e);
         setError(e instanceof Error ? e.message : "Failed to load listing");
@@ -114,6 +136,8 @@ export default function ListingPage() {
 
   const displayPrice = listing.price === "—" ? "Price not listed" : `$${listing.price}`;
 
+
+
   return (
     <div className="min-h-screen bg-amber-50">
       <main className="mx-auto max-w-5xl px-4 py-6">
@@ -131,7 +155,13 @@ export default function ListingPage() {
             </h1>
 
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
-              <span>Seller #{listing.userId}</span>
+              <Link
+                to="/users/$userId"
+                params={{ userId: listing.userId }}
+                className="text-blue-700 hover:underline"
+              >
+                {listing.sellerUsername}
+              </Link>
               <span>Oregon Tech</span>
             </div>
           </div>
@@ -194,18 +224,52 @@ export default function ListingPage() {
                   {listing.purchaseType}
                 </div>
                 <div>
-                  <span className="font-medium">Seller:</span> User #{listing.userId}
+                  <span className="font-medium">Seller:</span>{" "}
+                  <Link
+                    to="/users/$userId"
+                    params={{ userId: listing.userId }}
+                    className="text-blue-700 hover:underline"
+                  >
+                    {listing.sellerUsername}
+                  </Link>
                 </div>
               </div>
 
-              <button
-                className="mt-5 w-full bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
-                type="button"
-                onClick={() => alert("Placeholder: Contact seller")}
-              >
-                Contact Seller
-              </button>
+              {listing.sellerEmail ? (
+                <div className="mt-5 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowSellerEmail((current) => !current)}
+                    className="w-full bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                  >
+                    {showSellerEmail ? "Hide Seller Email" : "Contact Seller"}
+                  </button>
 
+                  {showSellerEmail && (
+                    <div className="rounded border border-gray-300 bg-white p-3 text-center">
+                      <p className="text-sm font-medium text-gray-900">
+                        {listing.sellerEmail}
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard.writeText(listing.sellerEmail)}
+                        className="mt-2 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-100"
+                      >
+                        Copy email
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  className="mt-5 w-full cursor-not-allowed bg-gray-400 px-4 py-2 text-sm font-medium text-white"
+                  type="button"
+                  disabled
+                >
+                  Contact Seller Unavailable
+                </button>
+              )}
               <Link
                 to="/users/$userId"
                 params={{ userId: listing.userId }}
@@ -217,9 +281,12 @@ export default function ListingPage() {
               <button
                 className="mt-3 w-full border border-gray-400 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-100"
                 type="button"
-                onClick={() => alert("Placeholder: Save listing")}
+                onClick={() => {
+                  toggleSavedListing(listing.id);
+                  setSaved(isListingSaved(listing.id));
+                }}
               >
-                Save Listing
+                {saved ? "Unsave Listing" : "Save Listing"}
               </button>
 
               <div className="mt-5 border-t border-gray-300 pt-4 text-xs leading-5 text-gray-600">
